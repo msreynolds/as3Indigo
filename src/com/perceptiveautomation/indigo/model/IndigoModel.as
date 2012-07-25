@@ -1,22 +1,23 @@
 package com.perceptiveautomation.indigo.model
 {
-	import com.adobe.cairngorm.model.IModelLocator;
-	import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
-	import com.perceptiveautomation.indigo.device.IIndigoDevice;
-	import com.perceptiveautomation.indigo.vo.AbstractIndigoDevice;
-	import com.perceptiveautomation.indigo.vo.AbstractIndigoVariable;
-	import com.perceptiveautomation.indigo.vo.IndigoRegInfo;
-	
-	import flash.errors.IllegalOperationError;
-	import flash.events.Event;
-	import flash.events.EventDispatcher;
-	import flash.net.XMLSocket;
-	import flash.utils.Dictionary;
-	
-	import mx.collections.ArrayCollection;
-	
-	[Bindable]
-	public class IndigoModel extends EventDispatcher implements IModelLocator
+import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
+import com.perceptiveautomation.indigo.constants.IndigoConstants;
+import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
+import com.perceptiveautomation.indigo.device.IIndigoDevice;
+import com.perceptiveautomation.indigo.vo.IndigoRegInfo;
+import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
+import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
+import com.perceptiveautomation.indigo.variable.IndigoVariable;
+
+import flash.errors.IllegalOperationError;
+import flash.events.Event;
+import flash.events.EventDispatcher;
+import flash.utils.Dictionary;
+
+import mx.collections.ArrayCollection;
+
+[Bindable]
+	public class IndigoModel extends EventDispatcher
 	{
 		private static var _instance:IndigoModel;
 		private static var _canInit:Boolean;
@@ -39,33 +40,28 @@ package com.perceptiveautomation.indigo.model
 			return _instance;
 		}
 		
-		public var applicationStatusMessage:String;
+		public var indigoState:String = IndigoConstants.INDIGO_SOCKET_STATE_DISCONNECTED;
 		
-		public var applicationState:String ='Login';
-		
-		//XML socket connection to the Indigo server.
-		public var indigoSocket:XMLSocket;			
-		
-		//Hash salt retrieved during the authtication process. Used to encrypt the raw password.   
+		//Hash salt retrieved during the authtication process. Used to encrypt the raw password.
 		public var indigoServerSalt:String;		   
 		
 		//Host server derived from the Indigo server, Flash shared object, or login form.
-		public var xmlServerIP:String = "";	   
+		public var indigoHost:String = "";
 		
 		//Host port derived from the Indigo server if present or set statically here.
-		public var xmlServerPort:int = 1176;	   
+		public var indigoPort:int = 1176;
 		
 		//Host password hash derived from the Indigo server if present.
-		public var xmlServerHash:String = "";	   
+		public var indigoAuthHash:String = "";
 		
 		//Host raw password derived from Falsh shared object or login form.
-		public var xmlServerPassword:String = ""; 
+		public var indigoPassword:String = "";
 		
 		//Host username derived from the Indigo server, Falsh shared object, or login form.
-		public var xmlServerUser:String = "";	   
+		public var indigoUser:String = "";
 		
-		//Local cache of the Device list. Bound to the deviceList datagrid UI control.
-		private var _indigoDeviceList:ArrayCollection;
+		//Local cache of the Device list.
+		private var _indigoDeviceList:ArrayCollection = new ArrayCollection();
 		
 		[Bindable(event='indigoDeviceListChanged')]
 		public function get indigoDeviceList():ArrayCollection
@@ -116,8 +112,8 @@ package com.perceptiveautomation.indigo.model
 			return result;
 		}
 		
-		//Local cache of the Action Group list. Bound to the actionList datagrid UI control.
-		private var _indigoActionGroupList:ArrayCollection;
+		//Local cache of the Action Group list.
+		private var _indigoActionGroupList:ArrayCollection = new ArrayCollection();
 		
 		[Bindable(event='indigoActionGroupListChanged')]
 		public function get indigoActionGroupList():ArrayCollection
@@ -158,18 +154,50 @@ package com.perceptiveautomation.indigo.model
 		public var indigoRegInfo:IndigoRegInfo;
 		public var regInfoCache:XML;			
 		
-		//Local cache of the Time and Data Trigger List.
-		public var indigoTimeDateTriggerList:ArrayCollection;
-		//public var timeDateTriggerListCache:XML;		
-		
-		//Local cache of the Trigger List.
-		public var indigoTriggerList:ArrayCollection;
-		//public var triggerListCache:XML;		
+        //Local cache of the Trigger list.
+        public var indigoTriggerDictionary:Dictionary;
+
+        //Local cache of the Trigger List.
+        private var _indigoTriggerList:ArrayCollection = new ArrayCollection();
+
+        [Bindable(event='indigoTriggerListChanged')]
+        public function get indigoTriggerList():ArrayCollection
+        {
+            return this._indigoTriggerList;
+        }
+
+        public function set indigoTriggerList(value:ArrayCollection):void
+        {
+            if (!this._indigoTriggerList)
+                this._indigoTriggerList = new ArrayCollection();
+
+            if (value)
+            {
+                this._indigoTriggerList.source = value.source;
+
+                indigoTriggerDictionary = new Dictionary(true);
+
+                var tempTrigger:IndigoTrigger;
+                var len:int = value.length;
+                for (var i:int=0; i < len; i++)
+                {
+                    tempTrigger = value.getItemAt(i) as IndigoTrigger;
+                    indigoTriggerDictionary[tempTrigger.name] = tempTrigger;
+                }
+
+                this._indigoTriggerList.refresh();
+            }
+            else
+                this._indigoTriggerList.source = null;
+
+
+            dispatchEvent(new Event('indigoTriggerListChanged'));
+        }
 		
 		//Local cache of the Variable list.
 		public var indigoVariableDictionary:Dictionary;
 		
-		private var _indigoVariableList:ArrayCollection;
+		private var _indigoVariableList:ArrayCollection = new ArrayCollection();
 		
 		[Bindable(event='indigoVariableListChanged')]
 		public function get indigoVariableList():ArrayCollection
@@ -188,11 +216,11 @@ package com.perceptiveautomation.indigo.model
 				
 				indigoVariableDictionary = new Dictionary(true);
 				
-				var tempVariable:AbstractIndigoVariable;	
+				var tempVariable:IndigoVariable;
 				var len:int = value.length;
 				for (var i:int=0; i < len; i++)
 				{
-					tempVariable = value.getItemAt(i) as AbstractIndigoVariable;
+					tempVariable = value.getItemAt(i) as IndigoVariable;
 					indigoVariableDictionary[tempVariable.name] = tempVariable.value;
 				}	
 				
@@ -204,11 +232,47 @@ package com.perceptiveautomation.indigo.model
 			
 			dispatchEvent(new Event('indigoVariableListChanged'));
 		}
-			
-		//Local cache of the Update Time. Bound to the corresponding display labels in the base state.
-		//public var indigoUpdateTimeInfoList:ArrayCollection;	
-		
-		
-		public var updateTimeInfo:String; 
+
+        //Local cache of the Schedules list.
+        public var indigoScheduleDictionary:Dictionary;
+
+        private var _indigoScheduleList:ArrayCollection = new ArrayCollection();
+
+        [Bindable(event='indigoScheduleListChanged')]
+        public function get indigoScheduleList():ArrayCollection
+        {
+            return this._indigoScheduleList;
+        }
+
+        public function set indigoScheduleList(value:ArrayCollection):void
+        {
+            if (!this._indigoScheduleList)
+                this._indigoScheduleList = new ArrayCollection();
+
+            if (value)
+            {
+                this._indigoScheduleList.source = value.source;
+
+                indigoScheduleDictionary = new Dictionary(true);
+
+                var tempSchedule:IndigoSchedule;
+                var len:int = value.length;
+                for (var i:int=0; i < len; i++)
+                {
+                    tempSchedule = value.getItemAt(i) as IndigoSchedule;
+                    indigoScheduleDictionary[tempSchedule.name] = tempSchedule;
+                }
+
+                this._indigoScheduleList.refresh();
+            }
+            else
+                this._indigoScheduleList.source = null;
+
+
+            dispatchEvent(new Event('indigoScheduleListChanged'));
+        }
+
+		//Local cache of the Update Time
+		public var updateTimeInfo:String;
 	}
 }
