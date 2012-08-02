@@ -1,10 +1,6 @@
 package com.perceptiveautomation.indigo.device
 {
-import com.perceptiveautomation.indigo.vo.*;
-import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
-import com.perceptiveautomation.indigo.device.BaseIndigoDevice;
-
-public class IndigoDeviceFactory
+    public class IndigoDeviceFactory
 	{
 
 		public function IndigoDeviceFactory()

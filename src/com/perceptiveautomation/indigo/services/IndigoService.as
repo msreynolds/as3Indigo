@@ -1,41 +1,43 @@
 package com.perceptiveautomation.indigo.services
 {
-import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
-import com.perceptiveautomation.indigo.actiongroup.IndigoActionGroup;
-import com.perceptiveautomation.indigo.constants.IndigoConstants;
-import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
-import com.perceptiveautomation.indigo.device.IIndigoDimmerDevice;
-import com.perceptiveautomation.indigo.device.IIndigoOnOffDevice;
-import com.perceptiveautomation.indigo.device.IIndigoThermostatDevice;
-import com.perceptiveautomation.indigo.events.IndigoDeviceChangeEvent;
-import com.perceptiveautomation.indigo.events.IndigoVariableChangeEvent;
-import com.perceptiveautomation.indigo.model.IndigoModel;
-import com.perceptiveautomation.indigo.util.HashUtil;
-import com.perceptiveautomation.indigo.util.SortUtil;
-import com.perceptiveautomation.indigo.device.BaseIndigoDevice;
-import com.perceptiveautomation.indigo.device.IndigoDeviceFactory;
-import com.perceptiveautomation.indigo.vo.IndigoLoginData;
-import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
-import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
-import com.perceptiveautomation.indigo.variable.IndigoVariable;
+    import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
+    import com.perceptiveautomation.indigo.actiongroup.IndigoActionGroup;
+    import com.perceptiveautomation.indigo.constants.IndigoConstants;
+    import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
+    import com.perceptiveautomation.indigo.device.BaseIndigoDevice;
+    import com.perceptiveautomation.indigo.device.IIndigoDimmerDevice;
+    import com.perceptiveautomation.indigo.device.IIndigoOnOffDevice;
+    import com.perceptiveautomation.indigo.device.IIndigoThermostatDevice;
+    import com.perceptiveautomation.indigo.device.IndigoDeviceFactory;
+    import com.perceptiveautomation.indigo.events.IndigoDeviceChangeEvent;
+    import com.perceptiveautomation.indigo.events.IndigoVariableChangeEvent;
+    import com.perceptiveautomation.indigo.model.IndigoModel;
+    import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
+    import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
+    import com.perceptiveautomation.indigo.util.HashUtil;
+    import com.perceptiveautomation.indigo.util.SortUtil;
+    import com.perceptiveautomation.indigo.variable.IndigoVariable;
+    import com.perceptiveautomation.indigo.vo.IndigoLoginData;
 
-import flash.events.DataEvent;
-import flash.events.Event;
-import flash.events.EventDispatcher;
-import flash.events.IEventDispatcher;
-import flash.events.IOErrorEvent;
-import flash.events.ProgressEvent;
-import flash.events.SecurityErrorEvent;
-import flash.net.XMLSocket;
+    import flash.events.DataEvent;
+    import flash.events.Event;
+    import flash.events.EventDispatcher;
+    import flash.events.IEventDispatcher;
+    import flash.events.IOErrorEvent;
+    import flash.events.ProgressEvent;
+    import flash.events.SecurityErrorEvent;
+    import flash.net.XMLSocket;
 
-import mx.collections.ArrayCollection;
-import mx.collections.Sort;
-import mx.collections.SortField;
-import mx.collections.XMLListCollection;
-import mx.rpc.http.HTTPService;
-import mx.utils.StringUtil;
+    import mx.collections.ArrayCollection;
+    import mx.collections.XMLListCollection;
+    import mx.rpc.http.HTTPService;
 
-public class IndigoService extends EventDispatcher
+    import mx.utils.StringUtil;
+
+    import spark.collections.Sort;
+    import spark.collections.SortField;
+
+    public class IndigoService extends EventDispatcher
 	{
         private var _model:IndigoModel = IndigoModel.getInstance();
         private var _api:String = IndigoConstants.INDIGO_API_SOCKET;
@@ -313,6 +315,7 @@ public class IndigoService extends EventDispatcher
             trace(packetType);
             trace(packetName);
             trace(packetData);
+            trace("");
 
             if (packetType == IndigoConstants.INDIGO_PACKET_TYPE_AUTHENTICATE)
             {
@@ -407,7 +410,7 @@ public class IndigoService extends EventDispatcher
 			} 
 			else if (packetName == IndigoConstants.INDIGO_PACKET_BROADCAST_LOG_STREAM)
 			{
-				//this._model.indigoLogStream = addItem(packetData, Application.application.gLogStream, 'Message', 'TimeCount');
+				this._model.indigoLogStream.addItem(packetData);
 											
 				// Handle adding a 
 				// "LogStream" item. Append the 

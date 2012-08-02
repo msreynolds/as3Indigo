@@ -3,7 +3,7 @@ package com.perceptiveautomation.indigo.trigger
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
-	public class IndigoTrigger extends EventDispatcher
+	public class IndigoTrigger extends EventDispatcher implements IIndigoTrigger
 	{
 		private var _name:String;
         private var _type:String;

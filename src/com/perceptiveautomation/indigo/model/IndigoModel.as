@@ -1,22 +1,22 @@
 package com.perceptiveautomation.indigo.model
 {
-import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
-import com.perceptiveautomation.indigo.constants.IndigoConstants;
-import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
-import com.perceptiveautomation.indigo.device.IIndigoDevice;
-import com.perceptiveautomation.indigo.vo.IndigoRegInfo;
-import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
-import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
-import com.perceptiveautomation.indigo.variable.IndigoVariable;
+    import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
+    import com.perceptiveautomation.indigo.constants.IndigoConstants;
+    import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
+    import com.perceptiveautomation.indigo.device.IIndigoDevice;
+    import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
+    import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
+    import com.perceptiveautomation.indigo.variable.IndigoVariable;
+    import com.perceptiveautomation.indigo.vo.IndigoRegInfo;
 
-import flash.errors.IllegalOperationError;
-import flash.events.Event;
-import flash.events.EventDispatcher;
-import flash.utils.Dictionary;
+    import flash.errors.IllegalOperationError;
+    import flash.events.Event;
+    import flash.events.EventDispatcher;
+    import flash.utils.Dictionary;
 
-import mx.collections.ArrayCollection;
+    import mx.collections.ArrayCollection;
 
-[Bindable]
+    [Bindable]
 	public class IndigoModel extends EventDispatcher
 	{
 		private static var _instance:IndigoModel;
@@ -146,11 +146,10 @@ import mx.collections.ArrayCollection;
 		
 		public var indigoActionGroupDictionary:Dictionary;
 		
-		//Local cache of the Log stream. Bound to the logList datagrid UI control.
-		public var indigoLogStream:ArrayCollection;
-		public var logStream:XML = <Data/>;
-		
-		//Local cache of the Registration info. Not used in the UI.
+		//Local cache of the Log stream.
+		public var indigoLogStream:ArrayCollection = new ArrayCollection();
+
+		//Local cache of the Registration info
 		public var indigoRegInfo:IndigoRegInfo;
 		public var regInfoCache:XML;			
 		
