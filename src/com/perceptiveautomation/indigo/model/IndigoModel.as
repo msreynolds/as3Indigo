@@ -20,7 +20,7 @@ package com.perceptiveautomation.indigo.model
 	public class IndigoModel extends EventDispatcher
 	{
 		private static var _instance:IndigoModel;
-		private static var _canInit:Boolean;
+		protected static var _canInit:Boolean;
 		
 		public function IndigoModel()
 		{
@@ -43,66 +43,94 @@ package com.perceptiveautomation.indigo.model
 		public var indigoState:String = IndigoConstants.INDIGO_SOCKET_STATE_DISCONNECTED;
 		
 		//Hash salt retrieved during the authtication process. Used to encrypt the raw password.
-		public var indigoServerSalt:String;		   
+		public var serverSalt:String;
 		
 		//Host server derived from the Indigo server, Flash shared object, or login form.
-		public var indigoHost:String = "";
+		public var host:String = "";
 		
 		//Host port derived from the Indigo server if present or set statically here.
-		public var indigoPort:int = 1176;
+		public var port:int = 1176;
 		
 		//Host password hash derived from the Indigo server if present.
-		public var indigoAuthHash:String = "";
+		public var authHash:String = "";
 		
 		//Host raw password derived from Falsh shared object or login form.
-		public var indigoPassword:String = "";
+		public var password:String = "";
 		
 		//Host username derived from the Indigo server, Falsh shared object, or login form.
-		public var indigoUser:String = "";
+		public var username:String = "";
 		
+        //Local cache of the Action Group list.
+        private var _actionGroupList:ArrayCollection = new ArrayCollection();
+        public var actionGroupDictionary:Dictionary;
+
 		//Local cache of the Device list.
-		private var _indigoDeviceList:ArrayCollection = new ArrayCollection();
-		
-		[Bindable(event='indigoDeviceListChanged')]
-		public function get indigoDeviceList():ArrayCollection
+		private var _deviceList:ArrayCollection = new ArrayCollection();
+        public var deviceDictionary:Dictionary;
+
+        //Local cache of the Schedules list.
+        public var scheduleDictionary:Dictionary;
+        private var _scheduleList:ArrayCollection = new ArrayCollection();
+
+        //Local cache of the Trigger list.
+        private var _triggerList:ArrayCollection = new ArrayCollection();
+        public var triggerDictionary:Dictionary;
+
+        //Local cache of the Variable list.
+        private var _variableList:ArrayCollection = new ArrayCollection();
+        public var variableDictionary:Dictionary;
+
+        //Local cache of the Update Time
+        public var updateTimeInfo:String;
+
+        //Local cache of the Log stream.
+        public var logStream:String = "";
+
+        //Local cache of the Packet stream.
+        public var packetStream:String = "";
+
+        //Local cache of the Registration info
+        public var regInfo:IndigoRegInfo;
+        public var regInfoCache:XML;
+
+
+		[Bindable(event='deviceListChanged')]
+		public function get deviceList():ArrayCollection
 		{
-			return this._indigoDeviceList;		
+			return this._deviceList;
 		}
 				
-		public function set indigoDeviceList(value:ArrayCollection):void
+		public function set deviceList(value:ArrayCollection):void
 		{
-			if (_indigoDeviceList !=  value)
+			if (_deviceList !=  value)
 			{
-				_indigoDeviceList = value;	
+				_deviceList = value;
 				
-				indigoDeviceDictionary = new Dictionary(true);
+				deviceDictionary = new Dictionary(true);
 				
-				var len:int = _indigoDeviceList?_indigoDeviceList.length:0;
+				var len:int = _deviceList?_deviceList.length:0;
 				var tempDevice:IIndigoDevice;
 				for (var i:int=0; i < len; i++)
 				{
-					tempDevice = _indigoDeviceList.getItemAt(i) as IIndigoDevice;
+					tempDevice = _deviceList.getItemAt(i) as IIndigoDevice;
 					if (tempDevice)
 					{
-						indigoDeviceDictionary[tempDevice.name] = tempDevice;
+						deviceDictionary[tempDevice.name] = tempDevice;
 					}
 				}	
 			}
 					
-			dispatchEvent( new Event('indigoDeviceListChanged') );
+			dispatchEvent( new Event('deviceListChanged') );
 		}
-		
-		public var indigoDeviceDictionary:Dictionary;
-				
 		
 		public function getDevicesByType(type:String):ArrayCollection
 		{
 			var result:ArrayCollection = new ArrayCollection;
-			var len:int = this._indigoDeviceList?this._indigoDeviceList.length:0;
+			var len:int = this._deviceList?this._deviceList.length:0;
 			var tempDevice:AbstractIndigoDevice;
 			for (var i:int=0; i < len; i++)
 			{
-				tempDevice = this._indigoDeviceList.getItemAt(i) as AbstractIndigoDevice;
+				tempDevice = this._deviceList.getItemAt(i) as AbstractIndigoDevice;
 				if (tempDevice && tempDevice.description.indexOf(type) > -1)
 				{
 					result.addItem( tempDevice );
@@ -112,166 +140,135 @@ package com.perceptiveautomation.indigo.model
 			return result;
 		}
 		
-		//Local cache of the Action Group list.
-		private var _indigoActionGroupList:ArrayCollection = new ArrayCollection();
-		
-		[Bindable(event='indigoActionGroupListChanged')]
-		public function get indigoActionGroupList():ArrayCollection
+		[Bindable(event='actionGroupListChanged')]
+		public function get actionGroupList():ArrayCollection
 		{
-			return this._indigoActionGroupList;		
+			return this._actionGroupList;
 		}
 				
-		public function set indigoActionGroupList(value:ArrayCollection):void
+		public function set actionGroupList(value:ArrayCollection):void
 		{
-			if (_indigoActionGroupList !=  value)
+			if (_actionGroupList !=  value)
 			{
-				_indigoActionGroupList = value;		
+				_actionGroupList = value;
 				
-				indigoActionGroupDictionary = new Dictionary(true);
+				actionGroupDictionary = new Dictionary(true);
 				
-				var len:int = _indigoActionGroupList?_indigoActionGroupList.length:0;
+				var len:int = _actionGroupList?_actionGroupList.length:0;
 				var tempActionGroup:IIndigoActionGroup;
 				for (var i:int=0; i < len; i++)
 				{
-					tempActionGroup = _indigoActionGroupList.getItemAt(i) as IIndigoActionGroup;
+					tempActionGroup = _actionGroupList.getItemAt(i) as IIndigoActionGroup;
 					if (tempActionGroup)
 					{
-						indigoActionGroupDictionary[tempActionGroup.name] = tempActionGroup;
+						actionGroupDictionary[tempActionGroup.name] = tempActionGroup;
 					}
 				}	
 			}
 					
-			dispatchEvent( new Event('indigoActionGroupListChanged') );
+			dispatchEvent( new Event('actionGroupListChanged') );
 		} 
 		
-		public var indigoActionGroupDictionary:Dictionary;
-		
-		//Local cache of the Log stream.
-		public var indigoLogStream:ArrayCollection = new ArrayCollection();
-
-		//Local cache of the Registration info
-		public var indigoRegInfo:IndigoRegInfo;
-		public var regInfoCache:XML;			
-		
-        //Local cache of the Trigger list.
-        public var indigoTriggerDictionary:Dictionary;
-
-        //Local cache of the Trigger List.
-        private var _indigoTriggerList:ArrayCollection = new ArrayCollection();
-
-        [Bindable(event='indigoTriggerListChanged')]
-        public function get indigoTriggerList():ArrayCollection
+        [Bindable(event='triggerListChanged')]
+        public function get triggerList():ArrayCollection
         {
-            return this._indigoTriggerList;
+            return this._triggerList;
         }
 
-        public function set indigoTriggerList(value:ArrayCollection):void
+        public function set triggerList(value:ArrayCollection):void
         {
-            if (!this._indigoTriggerList)
-                this._indigoTriggerList = new ArrayCollection();
+            if (!this._triggerList)
+                this._triggerList = new ArrayCollection();
 
             if (value)
             {
-                this._indigoTriggerList.source = value.source;
+                this._triggerList.source = value.source;
 
-                indigoTriggerDictionary = new Dictionary(true);
+                triggerDictionary = new Dictionary(true);
 
                 var tempTrigger:IndigoTrigger;
                 var len:int = value.length;
                 for (var i:int=0; i < len; i++)
                 {
                     tempTrigger = value.getItemAt(i) as IndigoTrigger;
-                    indigoTriggerDictionary[tempTrigger.name] = tempTrigger;
+                    triggerDictionary[tempTrigger.name] = tempTrigger;
                 }
 
-                this._indigoTriggerList.refresh();
+                this._triggerList.refresh();
             }
             else
-                this._indigoTriggerList.source = null;
+                this._triggerList.source = null;
 
 
-            dispatchEvent(new Event('indigoTriggerListChanged'));
+            dispatchEvent(new Event('triggerListChanged'));
         }
 		
-		//Local cache of the Variable list.
-		public var indigoVariableDictionary:Dictionary;
-		
-		private var _indigoVariableList:ArrayCollection = new ArrayCollection();
-		
-		[Bindable(event='indigoVariableListChanged')]
-		public function get indigoVariableList():ArrayCollection
+		[Bindable(event='variableListChanged')]
+		public function get variableList():ArrayCollection
 		{
-			return this._indigoVariableList;
+			return this._variableList;
 		}
 		
-		public function set indigoVariableList(value:ArrayCollection):void
+		public function set variableList(value:ArrayCollection):void
 		{
-			if (!this._indigoVariableList)
-				this._indigoVariableList = new ArrayCollection();
+			if (!this._variableList)
+				this._variableList = new ArrayCollection();
 				
 			if (value)	
 			{	
-				this._indigoVariableList.source = value.source;
+				this._variableList.source = value.source;
 				
-				indigoVariableDictionary = new Dictionary(true);
+				variableDictionary = new Dictionary(true);
 				
 				var tempVariable:IndigoVariable;
 				var len:int = value.length;
 				for (var i:int=0; i < len; i++)
 				{
 					tempVariable = value.getItemAt(i) as IndigoVariable;
-					indigoVariableDictionary[tempVariable.name] = tempVariable.value;
+					variableDictionary[tempVariable.name] = tempVariable.value;
 				}	
 				
-				this._indigoVariableList.refresh();
+				this._variableList.refresh();
 			}
 			else
-				this._indigoVariableList.source = null;
+				this._variableList.source = null;
 				
 			
-			dispatchEvent(new Event('indigoVariableListChanged'));
+			dispatchEvent(new Event('variableListChanged'));
 		}
 
-        //Local cache of the Schedules list.
-        public var indigoScheduleDictionary:Dictionary;
-
-        private var _indigoScheduleList:ArrayCollection = new ArrayCollection();
-
-        [Bindable(event='indigoScheduleListChanged')]
-        public function get indigoScheduleList():ArrayCollection
+        [Bindable(event='scheduleListChanged')]
+        public function get scheduleList():ArrayCollection
         {
-            return this._indigoScheduleList;
+            return this._scheduleList;
         }
 
-        public function set indigoScheduleList(value:ArrayCollection):void
+        public function set scheduleList(value:ArrayCollection):void
         {
-            if (!this._indigoScheduleList)
-                this._indigoScheduleList = new ArrayCollection();
+            if (!this._scheduleList)
+                this._scheduleList = new ArrayCollection();
 
             if (value)
             {
-                this._indigoScheduleList.source = value.source;
+                this._scheduleList.source = value.source;
 
-                indigoScheduleDictionary = new Dictionary(true);
+                scheduleDictionary = new Dictionary(true);
 
                 var tempSchedule:IndigoSchedule;
                 var len:int = value.length;
                 for (var i:int=0; i < len; i++)
                 {
                     tempSchedule = value.getItemAt(i) as IndigoSchedule;
-                    indigoScheduleDictionary[tempSchedule.name] = tempSchedule;
+                    scheduleDictionary[tempSchedule.name] = tempSchedule;
                 }
 
-                this._indigoScheduleList.refresh();
+                this._scheduleList.refresh();
             }
             else
-                this._indigoScheduleList.source = null;
+                this._scheduleList.source = null;
 
 
-            dispatchEvent(new Event('indigoScheduleListChanged'));
+            dispatchEvent(new Event('scheduleListChanged'));
         }
-
-		//Local cache of the Update Time
-		public var updateTimeInfo:String;
 	}
 }

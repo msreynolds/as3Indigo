@@ -1,8 +1,6 @@
 package com.perceptiveautomation.indigo.device
 {
-import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
-
-public class IRTransmitterDevice extends AbstractIndigoDevice
+    public class IRTransmitterDevice extends BaseIndigoDevice
 	{
 		public function IRTransmitterDevice(xmlNode:Object)
 		{

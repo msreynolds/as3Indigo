@@ -4,7 +4,7 @@ import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
 
 import flash.events.Event;
 
-	public class TimerDevice extends AbstractIndigoDevice
+	public class TimerDevice extends BaseIndigoDevice
 	{
 		private var _isOn:Boolean;
 		private var _timeLeft:int;

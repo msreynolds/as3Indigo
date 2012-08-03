@@ -4,7 +4,7 @@ import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
 
 import flash.events.Event;
 
-	public class IOLincDevice extends AbstractIndigoDevice
+	public class IOLincDevice extends BaseIndigoDevice
 	{
 		private var _isOn:Boolean;
 		

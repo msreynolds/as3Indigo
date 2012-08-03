@@ -1,8 +1,6 @@
 package com.perceptiveautomation.indigo.device
 {
-	import com.perceptiveautomation.indigo.device.IIndigoDevice;
-
-	public class ThermostatDevice extends OnOffDevice
+    public class ThermostatDevice extends OnOffDevice
 	{
 		private var _make:String;
 		private var _model:String;

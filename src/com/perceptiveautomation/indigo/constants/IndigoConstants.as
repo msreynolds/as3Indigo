@@ -24,6 +24,9 @@ public class IndigoConstants {
     public static const INDIGO_PACKET_TYPE_COMMAND:String = "Command";
     public static const INDIGO_PACKET_TYPE_RESPONSE:String = "Response";
 
+     // Indigo Packet Targets
+    public static const INDIGO_PACKET_TARGET_SERVER:String = "Server";
+
 
     // Indigo Authenticate Packet Names
     // Outgoing
@@ -69,6 +72,9 @@ public class IndigoConstants {
 
 
     // Indigo Commands
+    // Subscribe Commands
+    public static const INDIGO_COMMAND_SUBSCRIBE_TO_BROADCASTS:String = "SubscribeToServerBroadcasts";
+
     // On Off Device commands
     public static const INDIGO_COMMAND_DEVICE_ONOFF_TURN_ON:String = "TurnOn";
     public static const INDIGO_COMMAND_DEVICE_ONOFF_TURN_OFF:String = "TurnOff";
