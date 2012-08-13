@@ -81,9 +81,14 @@ public class IndigoConstants {
 
     // Dimmer Device commands
     public static const INDIGO_COMMAND_DEVICE_DIMMER_SET_BRIGHTNESS:String = "SetBrightness";
+    public static const INDIGO_COMMAND_DEVICE_DIMMER_DIM:String = "Dim";
+    public static const INDIGO_COMMAND_DEVICE_DIMMER_BRIGHTEN:String = "Brighten";
 
     // Thermostat Device commands
     public static const INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_HEAT_POINT:String = "SetHeatPoint";
     public static const INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_COOL_POINT:String = "SetCoolPoint";
+
+    // Variable Commands
+    public static const INDIGO_COMMAND_VARIABLE_SET_VALUE:String = "SetVariableValue";
 }
 }

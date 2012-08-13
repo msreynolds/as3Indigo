@@ -1,10 +1,10 @@
 package com.perceptiveautomation.indigo.variable
 {
-	public interface IIndigoVariable
+    import com.perceptiveautomation.indigo.IIndigoObject;
+
+    [Bindable]
+    public interface IIndigoVariable extends IIndigoObject
 	{
-		function get name():String;
-		function set name(value:String):void;
-		
 		function get value():Object;
 		function set value(value:Object):void;
 	}

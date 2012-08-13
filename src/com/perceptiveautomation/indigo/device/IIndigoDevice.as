@@ -1,12 +1,10 @@
 package com.perceptiveautomation.indigo.device
 {
-	
+    import com.perceptiveautomation.indigo.IIndigoObject;
 
-	public interface IIndigoDevice
+    [Bindable]
+    public interface IIndigoDevice extends IIndigoObject
 	{
-		function get name():String;
-		function set name(value:String):void;
-		
 		function get description():String;
 		function set description(value:String):void;
 		

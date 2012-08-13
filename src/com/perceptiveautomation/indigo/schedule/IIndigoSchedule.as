@@ -7,11 +7,11 @@
  */
 package com.perceptiveautomation.indigo.schedule
 {
-    public interface IIndigoSchedule
-    {
-        function get name():String;
-        function set name(value:String):void;
+    import com.perceptiveautomation.indigo.IIndigoObject;
 
+    [Bindable]
+    public interface IIndigoSchedule extends IIndigoObject
+    {
         function get description():String;
         function set description(value:String):void;
 

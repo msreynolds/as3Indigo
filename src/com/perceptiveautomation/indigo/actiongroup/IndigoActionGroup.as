@@ -3,7 +3,7 @@ package com.perceptiveautomation.indigo.actiongroup
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
-	[Meta(event='ActionGroupTriggered')]
+	[Meta(event='RunNow')]
 	
 	[Bindable]
 	public class IndigoActionGroup extends EventDispatcher implements IIndigoActionGroup
@@ -34,11 +34,6 @@ package com.perceptiveautomation.indigo.actiongroup
 			}
 		}
 		
-		public function trigger():void
-		{
-			dispatchEvent(new Event('ActionGroupTriggered'));	
-   		}
-
         [Bindable(event="descriptionChanged")]
         public function get description():String {
             return _description;
@@ -59,6 +54,11 @@ package com.perceptiveautomation.indigo.actiongroup
             if (_folder == value) return;
             _folder = value;
             dispatchEvent(new Event("folderChanged"));
+        }
+
+        public function runNow():void
+        {
+            dispatchEvent(new Event('RunNow'));
         }
     }
 }

@@ -7,11 +7,11 @@
  */
 package com.perceptiveautomation.indigo.trigger
 {
-    public interface IIndigoTrigger
-    {
-        function get name():String;
-        function set name(value:String):void;
+    import com.perceptiveautomation.indigo.IIndigoObject;
 
+    [Bindable]
+    public interface IIndigoTrigger extends IIndigoObject
+    {
         function get type():String;
         function set type(value:String):void;
 

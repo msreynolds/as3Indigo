@@ -16,7 +16,7 @@ package com.perceptiveautomation.indigo.device
 			
 			else if (xmlNode.TypeName.indexOf('Dimmer') > -1 || xmlNode.TypeName.indexOf('LampLinc V2') > -1 )
 			{
-				return new DimmableDevice(xmlNode);
+				return new DimmerDevice(xmlNode);
 			}
 			
 			else if (xmlNode.IsOn == "true" || xmlNode.IsOn == "false")

@@ -10,5 +10,7 @@ package com.perceptiveautomation.indigo.actiongroup
 
         function get folder():String;
         function set folder(value:String):void;
+
+        function runNow():void;
 	}
 }

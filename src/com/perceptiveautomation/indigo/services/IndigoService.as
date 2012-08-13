@@ -3,7 +3,6 @@ package com.perceptiveautomation.indigo.services
     import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
     import com.perceptiveautomation.indigo.actiongroup.IndigoActionGroup;
     import com.perceptiveautomation.indigo.constants.IndigoConstants;
-    import com.perceptiveautomation.indigo.constants.IndigoConstants;
     import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
     import com.perceptiveautomation.indigo.device.BaseIndigoDevice;
     import com.perceptiveautomation.indigo.device.IIndigoDimmerDevice;
@@ -16,7 +15,9 @@ package com.perceptiveautomation.indigo.services
     import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
     import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
     import com.perceptiveautomation.indigo.util.HashUtil;
+    import com.perceptiveautomation.indigo.util.IndigoXMLUtil;
     import com.perceptiveautomation.indigo.util.SortUtil;
+    import com.perceptiveautomation.indigo.variable.IIndigoVariable;
     import com.perceptiveautomation.indigo.variable.IndigoVariable;
     import com.perceptiveautomation.indigo.vo.IndigoLoginData;
 
@@ -32,7 +33,6 @@ package com.perceptiveautomation.indigo.services
     import mx.collections.ArrayCollection;
     import mx.collections.XMLListCollection;
     import mx.rpc.http.HTTPService;
-
     import mx.utils.StringUtil;
 
     import spark.collections.Sort;
@@ -100,32 +100,37 @@ package com.perceptiveautomation.indigo.services
 
         public function runActionGroup(actionGroup:IIndigoActionGroup):void
         {
-            sendDeviceCommandPacket(actionGroup.name, 'TriggerActionGroup', 0);
+            sendCommandPacket(actionGroup.name, 'TriggerActionGroup', 0);
         }
 
         public function turnOn(device:IIndigoOnOffDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_ONOFF_TURN_ON, 100);
+            sendCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_ONOFF_TURN_ON, 100);
         }
 
         public function turnOff(device:IIndigoOnOffDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_ONOFF_TURN_OFF, 0);
+            sendCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_ONOFF_TURN_OFF, 0);
         }
 
         public function setBrightness(device:IIndigoDimmerDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_DIMMER_SET_BRIGHTNESS, device.brightness);
+            sendCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_DIMMER_SET_BRIGHTNESS, device.brightness);
+        }
+
+        public function setVariableValue(variable:IIndigoVariable):void
+        {
+            sendCommandPacket(variable.name, IndigoConstants.INDIGO_COMMAND_VARIABLE_SET_VALUE, variable.value.toString())
         }
 
         public function setHeatPoint(device:IIndigoThermostatDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_HEAT_POINT, device.heatPoint);
+            sendCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_HEAT_POINT, device.heatPoint);
         }
 
         public function setCoolPoint(device:IIndigoThermostatDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_COOL_POINT, device.coolPoint);
+            sendCommandPacket(device.name, IndigoConstants.INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_COOL_POINT, device.coolPoint);
         }
 
         // REFRESH COMMANDS
@@ -158,95 +163,31 @@ package com.perceptiveautomation.indigo.services
         protected function sendSubscribeCommandPacket():void
         {
             // Create and send a command packet to the Indigo server
-            var sendCommandPacket:XML;
+            var sendCommandPacket:XML = IndigoXMLUtil.createSubscribeCommandPacket();
 
-            sendCommandPacket = <Packet />;
-            sendCommandPacket.@type = 'dict';
-            sendCommandPacket.Type = IndigoConstants.INDIGO_PACKET_TYPE_COMMAND;
-            sendCommandPacket.Type.@type = 'string';
-            sendCommandPacket.Target = IndigoConstants.INDIGO_PACKET_TARGET_SERVER;
-            sendCommandPacket.Target.@type = 'string';
-            sendCommandPacket.Name = IndigoConstants.INDIGO_COMMAND_SUBSCRIBE_TO_BROADCASTS;
-            sendCommandPacket.Name.@type = 'string';
-
-            // The set of "channels" to subscribe to
-            sendCommandPacket.Data = new XMLList(<Data type='vector'/>);
-
-            sendCommandPacket.Data.appendChild(<Name type="string">AddedDevice</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">RemovedDevice</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">ReplacedDevice</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">AddedTrigger</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">RemovedTrigger</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">ReplacedTrigger</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">AddedTDTrigger</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">RemovedTDTrigger</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">ReplacedTDTrigger</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">AddedVariable</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">RemovedVariable</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">ReplacedVariable</Name>);
-            sendCommandPacket.Data.appendChild(<Name type="string">LogStream</Name>);
-
-            sendPacket(sendCommandPacket);
+            outgoingPacketHandler(sendCommandPacket);
         }
 
-        // DEVICE COMMAND FUNCTIONS
-        protected function sendDeviceCommandPacket(name:String, command:String, value:Number):void
+        // COMMAND PACKET CREATOR FUNCTIONS
+        protected function sendCommandPacket(name:String, command:String, value:*):void
         {
             // Create and send a command packet to the Indigo server
-            var sendCommandPacket:XML;
+            var sendCommandPacket:XML = IndigoXMLUtil.createDeviceCommandPacket(name, command, value);
 
-            sendCommandPacket = <Packet />;
-            sendCommandPacket.@type = 'dict';
-            sendCommandPacket.Type = IndigoConstants.INDIGO_PACKET_TYPE_COMMAND;
-            sendCommandPacket.Type.@type = 'string';
-            sendCommandPacket.Name = command;
-            sendCommandPacket.Name.@type = 'string';
-            if(command == 'SetBrightness' || command == 'Dim' || command == 'Brighten')
-            {
-                //Determine if the device is dimmable
-                sendCommandPacket.Data.@type = 'dict';
-                sendCommandPacket.Data.Name = name;
-                sendCommandPacket.Data.Name.@type = 'string';
-                sendCommandPacket.Data.Amount = value;
-                sendCommandPacket.Data.Amount.@type = 'string';
-            }
-            else
-            {
-                sendCommandPacket.Data = name;
-                sendCommandPacket.Data.@type = 'string';
-            }
-
-            sendPacket(sendCommandPacket);
+            outgoingPacketHandler(sendCommandPacket);
         }
-
 
         protected function sendAuthenticateKnock():void
         {
 	   		/* Create and send an AuthenticateKnock packet
 	   		*/ 
-	    	var authenticatePacket:XML;									
-	    	// Create the authenticate packet type in XML format.
-	    		
-	    	authenticatePacket = <Packet />;
-	      	authenticatePacket.@type = 'dict';
-	      	authenticatePacket.Type = IndigoConstants.INDIGO_PACKET_TYPE_AUTHENTICATE;
-	      	authenticatePacket.Type.@type = 'string';
-	    	authenticatePacket.Name = IndigoConstants.INDIGO_PACKET_AUTH_KNOCK_KNOCK;
-	     	authenticatePacket.Name.@type = 'string';
-	     	authenticatePacket.Data;
-	     	authenticatePacket.Data.@type = 'dict';
-	     	authenticatePacket.Data.ClientType = '2';
-	     	authenticatePacket.Data.ClientType.@type = 'string';
-	     	authenticatePacket.Data.DoBroadcasts = 'true';
-	     	authenticatePacket.Data.DoBroadcasts.@type = 'string';
-	     	sendPacket(authenticatePacket);
+	    	const authenticatePacket:XML = IndigoXMLUtil.createAuthenticateKnockPacket();
+
+	     	outgoingPacketHandler(authenticatePacket);
 	  	}
 
         protected	function sendAuthenticatePassword(rawUser:String, rawPassword:String, hashPassword:String):void
 	  	{
-	  		// Create the authenticate packet type in XML format.
-			var authenticatePacket:XML;														
-			
 			// Create an instance of the HashUtil class.
 			var crypt:Object = new HashUtil();									
 			
@@ -260,24 +201,17 @@ package com.perceptiveautomation.indigo.services
 			if (hashPassword == null) {
 				hashPassword = crypt.hex_sha1(rawUser + ":Indigo Control Server:" + rawPassword);
 			}
+
 	 		// Then add the salt from the server onto it:
 			hashPasswordWithSalt = hashPassword + this._model.serverSalt;
+
 			// And re-hash everything again:
 			totalHash = crypt.hex_sha1(hashPasswordWithSalt);
-			// And finally, pass it off to the server for authentication:
-			authenticatePacket = <Packet />;
-	   		authenticatePacket.@type = 'dict';
-	   		authenticatePacket.Type = IndigoConstants.INDIGO_PACKET_TYPE_AUTHENTICATE;
-	   		authenticatePacket.Type.@type = 'string';
-	   		authenticatePacket.Name = IndigoConstants.INDIGO_PACKET_AUTH_ATTEMPT_AUTHENTICATION;
-	   		authenticatePacket.Name.@type = 'string';
-	   		authenticatePacket.Data;
-	   		authenticatePacket.Data.@type = 'dict';
-	   		authenticatePacket.Data.UserName = rawUser;
-	   		authenticatePacket.Data.UserName.@type = 'string';
-	   		authenticatePacket.Data.PasswordHash = totalHash;
-	   		authenticatePacket.Data.PasswordHash.@type = 'string';
-	   		sendPacket(authenticatePacket);
+
+            // Create the authenticate packet type in XML format.
+            const authenticatePacket:XML = IndigoXMLUtil.createAuthenticatePasswordPacket(rawUser, totalHash);
+
+            outgoingPacketHandler(authenticatePacket);
 		}
 
         protected function connectXMLSocket(XmlServer_IP:String, XmlServer_Port:int):void
@@ -307,7 +241,7 @@ package com.perceptiveautomation.indigo.services
 
 	    	socket.addEventListener(Event.CLOSE, connectClosedHandler);
             socket.addEventListener(Event.CONNECT, connectCompleteHandler);
-            socket.addEventListener(DataEvent.DATA, packetHandler);
+            socket.addEventListener(DataEvent.DATA, incomingPacketHandler);
             socket.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
             socket.addEventListener(ProgressEvent.PROGRESS, progressHandler);
             socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
@@ -319,7 +253,7 @@ package com.perceptiveautomation.indigo.services
 
 	    	socket.removeEventListener(Event.CLOSE, connectClosedHandler);
             socket.removeEventListener(Event.CONNECT, connectCompleteHandler);
-            socket.removeEventListener(DataEvent.DATA, packetHandler);
+            socket.removeEventListener(DataEvent.DATA, incomingPacketHandler);
             socket.removeEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
             socket.removeEventListener(ProgressEvent.PROGRESS, progressHandler);
             socket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
@@ -360,26 +294,20 @@ package com.perceptiveautomation.indigo.services
 		/************************************************************************************/
 		// PACKET HANDLERS (FOR RECEIVED PACKETS)
 		/***********************************************************************************/
-        protected function packetHandler(event:DataEvent):void
+        protected function incomingPacketHandler(event:DataEvent):void
 	   	{
 	   		// Handle the different packet types returned by the server.
 
-	   		var packetType:String;  // The type of packet.
-	   		var packetName:String;  // The packet name.
-	   		var packetData:XMLList; // The data node's descendants striped from the response packet.
-	   		var responsePacket:XML  // The entire packet as returned by the server.
-	  			
-	   		responsePacket = new XML(event.data); 				//Store the entire response packet from the server.
-	   		packetType = responsePacket.Type.toString();		//Strip out the packet type so we can determine how to process it.
-	   		packetName = responsePacket.Name.toString(); 		//Strip out the packet name so we can determine how to process it's contents later.
-	   		packetData = responsePacket.descendants("Data");	//Strip out the data node's descendets so we can process them later.
+            //Store the entire response packet from the server.
+	   		const responsePacket:XML = new XML(event.data);
 
-            this._model.packetStream += responsePacket + '\n';
+	   		const packetType:String = responsePacket.Type.toString();
 
-//            trace(packetType);
-//            trace(packetName);
-//            trace(packetData);
-//            trace("");
+	   		const packetName:String = responsePacket.Name.toString();
+	   		const packetData:XMLList = responsePacket.descendants("Data");
+
+
+            this._model.packetStreamIncoming += responsePacket + '\n';
 
             if (packetType == IndigoConstants.INDIGO_PACKET_TYPE_AUTHENTICATE)
             {
@@ -621,6 +549,25 @@ package com.perceptiveautomation.indigo.services
 				replaceVariable(packetData, _model.variableList, 'Name');
 			}
 		}
+
+        /************************************************************************************/
+        // PACKET PUSHER (FOR OUTGOING PACKETS)
+        /***********************************************************************************/
+        protected function outgoingPacketHandler(packet:XML):void
+        {
+            // Format the packet before being sent to the server.
+            var formattedPacket:String = '';
+            var packetString:String = packet.toString();
+            var packetArray:Array = packetString.split("\n");
+
+            for (var i:int = 0; i < packetArray.length; i++)
+            {
+                formattedPacket = formattedPacket + StringUtil.trim(packetArray[i]);
+            }
+
+            this._model.packetStreamOutgoing += formattedPacket + '\n';
+            this._indigoSocket.send(formattedPacket);
+        }
 		
 		
 		//LIST MARSHALING FUNCTIONS
@@ -632,6 +579,13 @@ package com.perceptiveautomation.indigo.services
 			for(var i:int=0; i<len;i++)
 			{
 				tempDevice = IndigoDeviceFactory.getIndigoDevice(xml..Device[i]);
+
+                if (tempDevice is IIndigoOnOffDevice)
+                    tempDevice.addEventListener( "isOnChanged", handleDeviceIsOnChange, false, 0, true );
+
+                if (tempDevice is IIndigoDimmerDevice)
+                    tempDevice.addEventListener( "brightnessChanged", handleDeviceBrightnessChange, false, 0, true );
+
 				tempDeviceCollection.addItem(tempDevice);
 			}
 			
@@ -689,6 +643,29 @@ package com.perceptiveautomation.indigo.services
 			}
 			return tempScheduleCollection;
 		}
+
+        protected function handleDeviceBrightnessChange(event:Event):void
+        {
+            if (event.target is IIndigoDimmerDevice)
+            {
+                setBrightness(event.target as IIndigoDimmerDevice)
+            }
+        }
+
+        protected function handleDeviceIsOnChange(event:Event):void
+        {
+            if (event.target is IIndigoOnOffDevice)
+            {
+                if ( IIndigoOnOffDevice(event.target).isOn )
+                {
+                    turnOn(event.target as IIndigoOnOffDevice);
+                }
+                else
+                {
+                    turnOff(event.target as IIndigoOnOffDevice);
+                }
+            }
+        }
 
         protected function handleResponse(packetName:String, packetData:XMLList):void
 		{
@@ -778,30 +755,10 @@ package com.perceptiveautomation.indigo.services
 	   	   	getListPacket.Type.@type = 'string';
 	   	   	getListPacket.Name = listType;
 	   	   	getListPacket.Name.@type = 'string';
-	   	   	sendPacket(getListPacket);
+	   	   	outgoingPacketHandler(getListPacket);
 	    }
 	
 
-        /************************************************************************************/
-        // PACKET PUSHER (FOR OUTGOING PACKETS)
-        /***********************************************************************************/
-        protected function sendPacket(packet:XML):void
-        {
-           // Format the packet before being sent to the server.
-           var formattedPacket:String = '';
-           var packetString:String = packet.toString();
-           var packetArray:Array = packetString.split("\n");
-
-           for (var i:int = 0; i < packetArray.length; i++)
-           {
-               formattedPacket = formattedPacket + StringUtil.trim(packetArray[i]);
-           }
-
-           trace("Sending Packet:\n" + formattedPacket);
-
-           this._indigoSocket.send(formattedPacket);
-        }
-	
 		/************************************************************************************/
 		// XML LIST CACHE AND ARRAYCOLLECTION MODIFIERS
 		/***********************************************************************************/

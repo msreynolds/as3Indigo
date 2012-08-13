@@ -87,7 +87,8 @@ package com.perceptiveautomation.indigo.model
         public var logStream:String = "";
 
         //Local cache of the Packet stream.
-        public var packetStream:String = "";
+        public var packetStreamIncoming:String = "";
+        public var packetStreamOutgoing:String = "";
 
         //Local cache of the Registration info
         public var regInfo:IndigoRegInfo;
