@@ -1,10 +1,9 @@
 package com.perceptiveautomation.indigo.actiongroup
 {
-	public interface IIndigoActionGroup
-	{
-		function get name():String;
-		function set name(value:String):void;
+    import com.perceptiveautomation.indigo.IIndigoObject;
 
+    public interface IIndigoActionGroup extends IIndigoObject
+	{
         function get description():String;
         function set description(value:String):void;
 

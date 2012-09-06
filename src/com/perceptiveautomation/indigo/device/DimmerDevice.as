@@ -3,11 +3,11 @@ package com.perceptiveautomation.indigo.device
 import com.perceptiveautomation.indigo.vo.*;
 	import flash.events.Event;
 
-	public class DimmableDevice extends OnOffDevice
+	public class DimmerDevice extends OnOffDevice implements IIndigoDimmerDevice
 	{
 		private var _brightness:Number;
 		
-		public function DimmableDevice(xmlNode:XML)
+		public function DimmerDevice(xmlNode:XML)
 		{
 			super(xmlNode);
 			

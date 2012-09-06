@@ -7,14 +7,17 @@
  */
 package com.perceptiveautomation.indigo.device
 {
-    import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
-    import com.perceptiveautomation.indigo.device.IIndigoDevice;
+    import com.perceptiveautomation.indigo.vo.AbstractIndigoDevice;
 
     public class BaseIndigoDevice extends AbstractIndigoDevice implements IIndigoDevice
     {
+        private var _id:int;
+
         public function BaseIndigoDevice(xmlNode:Object)
         {
             super(xmlNode);
+
+            this._id = xmlNode.ID;
         }
     }
 }

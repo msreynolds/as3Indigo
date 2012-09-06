@@ -3,7 +3,7 @@ package com.perceptiveautomation.indigo.actiongroup
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
-	[Meta(event='RunNow')]
+	[Meta(event='runNow')]
 	
 	[Bindable]
 	public class IndigoActionGroup extends EventDispatcher implements IIndigoActionGroup
@@ -58,7 +58,7 @@ package com.perceptiveautomation.indigo.actiongroup
 
         public function runNow():void
         {
-            dispatchEvent(new Event('RunNow'));
+            dispatchEvent(new Event('runNow'));
         }
     }
 }

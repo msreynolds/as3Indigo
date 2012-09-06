@@ -1,10 +1,8 @@
 package com.perceptiveautomation.indigo.device
 {
-import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
+    import flash.events.Event;
 
-import flash.events.Event;
-
-	public class IOLincDevice extends BaseIndigoDevice
+    public class IOLincDevice extends BaseIndigoDevice
 	{
 		private var _isOn:Boolean;
 		

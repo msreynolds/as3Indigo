@@ -1,22 +1,22 @@
 package com.perceptiveautomation.indigo.events
 {
-import com.perceptiveautomation.indigo.variable.IndigoVariable;
+    import com.perceptiveautomation.indigo.variable.IIndigoVariable;
 
-import flash.events.Event;
+    import flash.events.Event;
 
-public class IndigoVariableChangeEvent extends Event
+    public class IndigoVariableChangeEvent extends Event
 	{
         public static const TYPE:String = "com.perceptiveautomation.indigo.events.IndigoVariableChangeEvent";
 
-        private var _variable:IndigoVariable;
+        private var _variable:IIndigoVariable;
 		
-		public function IndigoVariableChangeEvent(variable:IndigoVariable)
+		public function IndigoVariableChangeEvent(variable:IIndigoVariable)
 		{
 			super(TYPE);
 			this._variable = variable;
 		}
 		
-		public function get variable():IndigoVariable
+		public function get variable():IIndigoVariable
 		{
 			return this._variable;
 		}

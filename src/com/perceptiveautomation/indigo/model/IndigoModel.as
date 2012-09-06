@@ -1,12 +1,12 @@
 package com.perceptiveautomation.indigo.model
 {
     import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
-    import com.perceptiveautomation.indigo.constants.IndigoConstants;
-    import com.perceptiveautomation.indigo.device.AbstractIndigoDevice;
+    import com.perceptiveautomation.indigo.constants.IndigoSocketConstants;
     import com.perceptiveautomation.indigo.device.IIndigoDevice;
     import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
     import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
     import com.perceptiveautomation.indigo.variable.IndigoVariable;
+    import com.perceptiveautomation.indigo.vo.AbstractIndigoDevice;
     import com.perceptiveautomation.indigo.vo.IndigoRegInfo;
 
     import flash.errors.IllegalOperationError;
@@ -40,7 +40,7 @@ package com.perceptiveautomation.indigo.model
 			return _instance;
 		}
 		
-		public var indigoState:String = IndigoConstants.INDIGO_SOCKET_STATE_DISCONNECTED;
+		public var indigoState:String = IndigoSocketConstants.INDIGO_SOCKET_STATE_DISCONNECTED;
 		
 		//Hash salt retrieved during the authtication process. Used to encrypt the raw password.
 		public var serverSalt:String;

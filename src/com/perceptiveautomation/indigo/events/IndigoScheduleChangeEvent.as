@@ -7,15 +7,26 @@
  */
 package com.perceptiveautomation.indigo.events
 {
+    import com.perceptiveautomation.indigo.schedule.IIndigoSchedule;
+
     import flash.events.Event;
 
     public class IndigoScheduleChangeEvent extends Event
     {
         public static const TYPE:String = "com.perceptiveautomation.indigo.events.IndigoScheduleChangeEvent";
 
-        public function IndigoScheduleChangeEvent()
+        private var _schedule:IIndigoSchedule;
+
+        public function IndigoScheduleChangeEvent(schedule:IIndigoSchedule)
         {
+            _schedule = schedule;
             super(TYPE);
         }
+
+        public function get schedule():IIndigoSchedule
+        {
+            return _schedule;
+        }
+
     }
 }
