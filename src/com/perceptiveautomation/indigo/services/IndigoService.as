@@ -19,6 +19,7 @@ package com.perceptiveautomation.indigo.services
     import com.perceptiveautomation.indigo.model.IndigoModel;
     import com.perceptiveautomation.indigo.schedule.IIndigoSchedule;
     import com.perceptiveautomation.indigo.schedule.IIndigoSchedule;
+    import com.perceptiveautomation.indigo.schedule.IIndigoSchedule;
     import com.perceptiveautomation.indigo.trigger.IIndigoTrigger;
     import com.perceptiveautomation.indigo.trigger.IIndigoTrigger;
     import com.perceptiveautomation.indigo.util.HashUtil;
@@ -45,6 +46,8 @@ package com.perceptiveautomation.indigo.services
     import flash.xml.XMLNode;
 
     import mx.collections.ArrayCollection;
+    import mx.collections.ICollectionView;
+    import mx.collections.IList;
     import mx.collections.XMLListCollection;
     import mx.rpc.AsyncToken;
     import mx.rpc.events.FaultEvent;
@@ -72,41 +75,168 @@ package com.perceptiveautomation.indigo.services
         /************************************************************************************/
         // INDIGO OBJECT MANAGEMENT FUNCTIONS
         /***********************************************************************************/
-        protected function createDeviceList(packetData:XMLList):void
+        protected function addAllActionGroupListeners():void
         {
-            this._model.deviceList = IndigoObjectUtil.createDeviceList(packetData);
-            addDeviceListeners();
-        }
-
-        protected function destroyDeviceList():void
-        {
-            const len:int = this._model.deviceList.length;
-            var indigoDevice:IIndigoDevice;
+            const len:int = this._model.actionGroupList.length;
+            var tempActionGroup:IIndigoActionGroup;
             for (var i:int = 0; i < len; i++)
             {
-                indigoDevice = this._model.deviceList.getItemAt(i) as IIndigoDevice;
-                indigoDevice.removeEventListener("isOnChanged", handleDeviceIsOnChange);
-                indigoDevice.removeEventListener("brightnessChanged", handleDeviceBrightnessChange);
-            }
-
-            this._model.deviceList.removeAll();
-
-            for each (var key:String in this._model.deviceDictionary)
-            {
-                delete this._model.deviceDictionary[key];
+                tempActionGroup = this._model.actionGroupList.getItemAt(i) as IIndigoActionGroup;
+                addActionGroupListeners(tempActionGroup);
             }
         }
 
-        protected function addDeviceListeners():void
+        protected function removeAllActionGroupListeners():void
         {
-            const len:int = this._model.deviceList.length;
-            var indigoDevice:IIndigoDevice;
+            const len:int = this._model.actionGroupList.length;
+            var tempActionGroup:IIndigoActionGroup;
             for (var i:int = 0; i < len; i++)
             {
-                indigoDevice = this._model.deviceList.getItemAt(i) as IIndigoDevice;
-                indigoDevice.addEventListener("isOnChanged", handleDeviceIsOnChange);
-                indigoDevice.addEventListener("brightnessChanged", handleDeviceBrightnessChange);
+                tempActionGroup = this._model.actionGroupList.getItemAt(i) as IIndigoActionGroup;
+                removeActionGroupListeners(tempActionGroup);
             }
+        }
+
+        protected function addActionGroupListeners(actionGroup:IIndigoActionGroup):void
+        {
+            actionGroup.addEventListener("runNow", handleActionGroupRunNow);
+        }
+
+        protected function removeActionGroupListeners(actionGroup:IIndigoActionGroup):void
+        {
+            actionGroup.removeEventListener("runNow", handleActionGroupRunNow);
+        }
+
+
+        protected function addAllDeviceListeners():void
+        {
+            const len:int = this._model.deviceList.length;
+            var tempDevice:IIndigoDevice;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempDevice = this._model.deviceList.getItemAt(i) as IIndigoDevice;
+                addDeviceListeners(tempDevice);
+            }
+        }
+
+        protected function removeAllDeviceListeners():void
+        {
+            const len:int = this._model.deviceList.length;
+            var tempDevice:IIndigoDevice;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempDevice = this._model.deviceList.getItemAt(i) as IIndigoDevice;
+                removeDeviceListeners(tempDevice);
+            }
+        }
+
+        protected function addDeviceListeners(device:IIndigoDevice):void
+        {
+            device.addEventListener("isOnChanged", handleDeviceIsOnChange);
+            device.addEventListener("brightnessChanged", handleDeviceBrightnessChange);
+        }
+
+        protected function removeDeviceListeners(device:IIndigoDevice):void
+        {
+            device.removeEventListener("isOnChanged", handleDeviceIsOnChange);
+            device.removeEventListener("brightnessChanged", handleDeviceBrightnessChange);
+        }
+
+
+        protected function addAllScheduleListeners():void
+        {
+            const len:int = this._model.scheduleList.length;
+            var tempSchedule:IIndigoSchedule;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempSchedule = this._model.scheduleList.getItemAt(i) as IIndigoSchedule;
+                addScheduleListeners(tempSchedule);
+            }
+        }
+
+        protected function removeAllScheduleListeners():void
+        {
+            const len:int = this._model.scheduleList.length;
+            var tempSchedule:IIndigoSchedule;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempSchedule = this._model.scheduleList.getItemAt(i) as IIndigoSchedule;
+                removeScheduleListeners(tempSchedule);
+            }
+        }
+
+        protected function addScheduleListeners(schedule:IIndigoSchedule):void
+        {
+        }
+
+        protected function removeScheduleListeners(schedule:IIndigoSchedule):void
+        {
+        }
+
+
+        protected function addAllTriggerListeners():void
+        {
+            // There are no trigger listeners currently
+//            const len:int = this._model.triggerList.length;
+//            var tempTrigger:IIndigoTrigger;
+//            for (var i:int = 0; i < len; i++)
+//            {
+//                tempTrigger = this._model.triggerList.getItemAt(i) as IIndigoTrigger;
+//                addTriggerListeners(tempTrigger);
+//            }
+        }
+
+        protected function removeAllTriggerListeners():void
+        {
+            // There are no trigger listeners currently
+//            const len:int = this._model.triggerList.length;
+//            var tempTrigger:IIndigoTrigger;
+//            for (var i:int = 0; i < len; i++)
+//            {
+//                tempTrigger = this._model.triggerList.getItemAt(i) as IIndigoTrigger;
+//                removeTriggerListeners(tempTrigger);
+//            }
+        }
+
+        protected function addTriggerListeners(trigger:IIndigoTrigger):void
+        {
+        }
+
+        protected function removeTriggerListeners(trigger:IIndigoTrigger):void
+        {
+        }
+
+
+        protected function addAllVariableListeners():void
+        {
+            const len:int = this._model.variableList.length;
+            var tempVariable:IIndigoVariable;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempVariable = this._model.variableList.getItemAt(i) as IIndigoVariable;
+                addVariableListeners(tempVariable);
+            }
+        }
+
+        protected function removeAllVariableListeners():void
+        {
+            const len:int = this._model.variableList.length;
+            var tempVariable:IIndigoVariable;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempVariable = this._model.variableList.getItemAt(i) as IIndigoVariable;
+                removeVariableListeners(tempVariable);
+            }
+        }
+
+        protected function addVariableListeners(variable:IIndigoVariable):void
+        {
+            variable.addEventListener("valueChanged", handleVariableValueChange);
+        }
+
+        protected function removeVariableListeners(variable:IIndigoVariable):void
+        {
+            variable.removeEventListener("valueChanged", handleVariableValueChange);
         }
 
         /************************************************************************************/
@@ -182,12 +312,7 @@ package com.perceptiveautomation.indigo.services
             else if (apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
             {
                 this._model.indigoState = IndigoRestConstants.INDIGO_REST_STATE_CONNECTING;
-                //connectUrl(_model.host+":"+_model.port, IndigoRESTConstants.INDIGO_REST_ENDPOINT_ACTION_GROUPS);
-                //connectUrl(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
-                connectUrl(_model.host+":"+_model.port, "/devices/aquariumhood.xml");
-                //connectUrl(_model.host+":"+_model.port, IndigoRESTConstants.INDIGO_REST_ENDPOINT_SCHEDULES);
-                //connectUrl(_model.host+":"+_model.port, IndigoRESTConstants.INDIGO_REST_ENDPOINT_TRIGGERS);
-                //connectUrl(_model.host+":"+_model.port, IndigoRESTConstants.INDIGO_REST_ENDPOINT_VARIABLES);
+                connectUrl();
             }
 	    }
 
@@ -317,12 +442,14 @@ package com.perceptiveautomation.indigo.services
         {
             // TODO: Try to determine what the error was and return a more specific state constant
             this._model.indigoState = IndigoSocketConstants.INDIGO_SOCKET_STATE_DISCONNECTED;
+            trace(event.toString());
         }
 
         protected function securityErrorHandler(event:SecurityErrorEvent):void
         {
             // TODO: Try to determine what the error was and return a more specific state constant
             this._model.indigoState = IndigoSocketConstants.INDIGO_SOCKET_STATE_DISCONNECTED;
+            trace(event.toString());
         }
 
         protected function progressHandler(event:ProgressEvent):void
@@ -669,30 +796,25 @@ package com.perceptiveautomation.indigo.services
                 // sort by 'Name'.
                 // ------------------------
             }
+            else if (packetName == IndigoSocketConstants.INDIGO_PACKET_BROADCAST_REPLACED_ACTION_GROUP)
+            {
+                addOrReplaceActionGroupFromXML(packetData.ActionGroup as XML);
+            }
             else if (packetName == IndigoSocketConstants.INDIGO_PACKET_BROADCAST_REPLACED_DEVICE)
             {
-                var device:IIndigoDevice = IndigoObjectUtil.replaceDevice(packetData, _model.deviceList);
-                dispatchEvent(new IndigoDeviceChangeEvent(device));
-            }
-            else if (packetName == IndigoSocketConstants.INDIGO_PACKET_BROADCAST_REPLACED_TRIGGER)
-            {
-                var trigger:IIndigoTrigger = IndigoObjectUtil.replaceTrigger(packetData, _model.triggerList);
-                dispatchEvent(new IndigoTriggerChangeEvent(trigger));
+                addOrReplaceDeviceFromXML(packetData.Device as XML);
             }
             else if (packetName == IndigoSocketConstants.INDIGO_PACKET_BROADCAST_REPLACED_SCHEDULE)
             {
-                var schedule:IIndigoSchedule = IndigoObjectUtil.replaceSchedule(packetData, _model.scheduleList);
-                dispatchEvent(new IndigoScheduleChangeEvent(schedule));
+                addOrReplaceScheduleFromXML(packetData.Schedule as XML);
             }
-            else if (packetName == IndigoSocketConstants.INDIGO_PACKET_BROADCAST_REPLACED_ACTION_GROUP)
+            else if (packetName == IndigoSocketConstants.INDIGO_PACKET_BROADCAST_REPLACED_TRIGGER)
             {
-                var actionGroup:IIndigoActionGroup = IndigoObjectUtil.replaceActionGroup(packetData, _model.actionGroupList);
-                dispatchEvent(new IndigoActionGroupChangeEvent(actionGroup));
+                addOrReplaceTriggerFromXML(packetData.Trigger as XML);
             }
             else if (packetName == IndigoSocketConstants.INDIGO_PACKET_BROADCAST_REPLACED_VARIABLE)
             {
-                var variable:IIndigoVariable = IndigoObjectUtil.replaceVariable(packetData, _model.variableList);
-                dispatchEvent(new IndigoVariableChangeEvent(variable));
+                addOrReplaceVariableFromXML(packetData.Variable as XML);
             }
         }
 
@@ -702,8 +824,7 @@ package com.perceptiveautomation.indigo.services
 
             if (packetName == IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_DEVICE)
             {
-                destroyDeviceList();
-                createDeviceList(packetData);
+                rebuildAllDevicesFromXML(packetData);
             }
             else if (packetName == IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_ACTION_GROUP)
             {
@@ -729,8 +850,17 @@ package com.perceptiveautomation.indigo.services
         /************************************************************************************/
         // RESTful API FUNCTIONS
         /***********************************************************************************/
+        protected function connectUrl():void
+        {
+            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_ACTION_GROUPS);
+            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
+            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_VARIABLES);
+            // No endpoints for these two as of yet, boo :-(
+//            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_SCHEDULES);
+//            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_TRIGGERS);
+        }
 
-        protected function connectUrl(url:String, resource:String):void
+        protected function sendUrlRequest(url:String, resource:String):void
         {
             var request: URLRequest = new URLRequest(url + resource);
             request.method = "GET";
@@ -739,6 +869,7 @@ package com.perceptiveautomation.indigo.services
             _indigoUrlLoader = new URLLoader(request);
             _indigoUrlLoader.dataFormat = "xml";
             _indigoUrlLoader.load(request);
+            this._model.packetStreamOutgoing += request.url + '\n';
             addRestListeners();
         }
 
@@ -766,102 +897,169 @@ package com.perceptiveautomation.indigo.services
         protected function handleRestResult(resultEvent:Event):void
         {
             var result:XML = new XML(resultEvent.target.data);
-            var resultsList:Array;
+            var resultsList:XMLList;
+
+            this._model.packetStreamIncoming += result.toXMLString() + '\n';
 
             if (result != null)
             {
-                if (result.localName() == "actiongroups")
+                if ( result.localName() == "actions" ||
+                     result.localName() == "devices" ||
+                     result.localName() == "variables"
+                     //result.localName() == "schedules" ||
+                     //result.localName() == "triggers" ||
+                   )
                 {
-                    resultsList = XMLNode(result).childNodes;
-                    //processRestResultList(resultsList);
-                    return;
-                }
-
-                if (result.localName() == "devices")
-                {
-                    resultsList = XMLNode(result).childNodes;
+                    resultsList = XML(result).children();
                     processRestObjectListResult(resultsList);
                     return;
                 }
 
-                if (result.localName() == "schedules")
+                if (result.localName() == "action")
                 {
-                    resultsList = XMLNode(result).childNodes;
-                    //processRestResultList(resultsList);
+                    addOrReplaceActionGroupFromXML(result);
                     return;
                 }
-
-                if (result.localName() == "triggers")
-                {
-                    resultsList = XMLNode(result).childNodes;
-                    //processRestResultList(resultsList);
-                    return;
-                }
-
-                if (result.localName() == "variables")
-                {
-                    resultsList = XMLNode(result).childNodes;
-                    //processRestResultList(resultsList);
-                    return;
-                }
-
 
                 if (result.localName() == "device")
                 {
-                    //resultsList = XMLNode(result.result).childNodes;
-                    processRestResultDevice(result);
+                    addOrReplaceDeviceFromXML(result);
                     return;
                 }
-            }
-            else if (result.result is XML)
-            {
+
+                if (result.localName() == "variable")
+                {
+                    addOrReplaceVariableFromXML(result);
+                    return;
+                }
+//                if (result.localName() == "trigger")
+//                {
+//                    addOrReplaceTriggerFromXML(result);
+//                    return;
+//                }
+
+//                if (result.localName() == "schedule")
+//                {
+//                    addOrReplaceScheduleFromXML(result);
+//                    return;
+//                }
 
             }
 
-            // TODO: Individual List Item result processors
-            trace(result.result.toXMLString());
             return;
 
-        }
-
-        protected function processRestObjectListResult(resultList:Array):void
-        {
-            for each (var node:XMLNode in resultList)
-            {
-                var href:String = XML(node).@href;
-                connectUrl(_model.host+":"+_model.port, href);
-                break;
-            }
-        }
-
-        protected function processRestResultActionGroup(actionGroup:XML):void
-        {
-            var indigoActionGroup:IIndigoActionGroup = IndigoObjectUtil.createIndigoActionGroup(actionGroup);
-        }
-
-        protected function processRestResultDevice(device:XML):void
-        {
-            var indigoDevice:IIndigoDevice = IndigoObjectUtil.createIndigoDevice(device);
-        }
-
-        protected function processRestResultSchedule(schedule:XML):void
-        {
-            var indigoSchedule:IIndigoSchedule = IndigoObjectUtil.createIndigoSchedule(schedule);
-        }
-
-        protected function processRestResultTrigger(trigger:XML):void
-        {
-            var indigoTrigger:IIndigoTrigger = IndigoObjectUtil.createIndigoTrigger(trigger);
-        }
-
-        protected function processRestResultVariable(variable:XML):void
-        {
-            var indigoVariable:IIndigoVariable = IndigoObjectUtil.createIndigoVariable(variable);
         }
 
         protected function handleRESTFault(fault:FaultEvent):void
         {
             trace(fault.fault);
+        }
+
+        protected function processRestObjectListResult(resultList:XMLList):void
+        {
+            for each (var node:XML in resultList)
+            {
+                sendUrlRequest(_model.host+":"+_model.port, node.@href);
+            }
+        }
+
+
+        // REBUILD LIST FROM XML
+        protected function rebuildAllActionGroupsFromXML(xmlData:XMLList):void
+        {
+            removeAllActionGroupListeners();
+
+            this._model.actionGroupList.removeAll();
+            this._model.actionGroupList = IndigoObjectUtil.createActionGroupList(xmlData);
+
+            addAllActionGroupListeners();
+        }
+
+        protected function rebuildAllDevicesFromXML(xmlData:XMLList):void
+        {
+            removeAllDeviceListeners();
+
+            this._model.deviceList.removeAll();
+            this._model.deviceList = IndigoObjectUtil.createDeviceList(xmlData);
+
+            addAllDeviceListeners();
+        }
+
+        protected function rebuildAllSchedulesFromXML(xmlData:XMLList):void
+        {
+            removeAllScheduleListeners();
+
+            this._model.scheduleList.removeAll();
+            this._model.scheduleList = IndigoObjectUtil.createScheduleList(xmlData);
+
+            addAllScheduleListeners();
+        }
+
+        protected function rebuildAllTriggersFromXML(xmlData:XMLList):void
+        {
+            removeAllTriggerListeners();
+
+            this._model.triggerList.removeAll();
+            this._model.triggerList = IndigoObjectUtil.createDeviceList(xmlData);
+
+            addAllTriggerListeners();
+        }
+
+        protected function rebuildAllVariablesFromXML(xmlData:XMLList):void
+        {
+            removeAllVariableListeners();
+
+            this._model.variableList.removeAll();
+            this._model.variableList = IndigoObjectUtil.createDeviceList(xmlData);
+
+            addAllVariableListeners();
+        }
+
+
+        // ADD OR REPLACE FROM XML
+        protected function addOrReplaceActionGroupFromXML(actionGroupXML:XML):void
+        {
+            var tempActionGroup:IIndigoActionGroup = IndigoObjectUtil.createIndigoActionGroup(actionGroupXML);
+            removeAllActionGroupListeners();
+            tempActionGroup = IndigoObjectUtil.addOrReplaceActionGroup(tempActionGroup, _model.actionGroupList);
+            addAllActionGroupListeners();
+            dispatchEvent(new IndigoActionGroupChangeEvent(tempActionGroup));
+        }
+
+        protected function addOrReplaceDeviceFromXML(deviceXML:XML):void
+        {
+            var tempDevice:IIndigoDevice = IndigoObjectUtil.createIndigoDevice(deviceXML);
+            removeAllDeviceListeners();
+            tempDevice = IndigoObjectUtil.addOrReplaceDevice(tempDevice, _model.deviceList);
+            addAllDeviceListeners();
+            dispatchEvent(new IndigoDeviceChangeEvent(tempDevice));
+        }
+
+        protected function addOrReplaceScheduleFromXML(scheduleXML:XML):void
+        {
+            var tempSchedule:IIndigoSchedule = IndigoObjectUtil.createIndigoSchedule(scheduleXML);
+            removeAllScheduleListeners();
+            tempSchedule = IndigoObjectUtil.addOrReplaceSchedule(tempSchedule, _model.scheduleList);
+            addAllScheduleListeners();
+            dispatchEvent(new IndigoScheduleChangeEvent(tempSchedule));
+        }
+
+        protected function addOrReplaceTriggerFromXML(triggerXML:XML):void
+        {
+            var tempTrigger:IIndigoTrigger = IndigoObjectUtil.createIndigoTrigger(triggerXML);
+            removeAllTriggerListeners();
+            tempTrigger = IndigoObjectUtil.addOrReplaceTrigger(tempTrigger, _model.triggerList);
+            addAllTriggerListeners();
+            dispatchEvent(new IndigoTriggerChangeEvent(tempTrigger));
+        }
+
+        protected function addOrReplaceVariableFromXML(variableXML:XML):void
+        {
+            var tempVariable:IIndigoVariable = IndigoObjectUtil.createIndigoVariable(variableXML);
+            removeAllVariableListeners();
+            tempVariable = IndigoObjectUtil.addOrReplaceVariable(tempVariable, _model.variableList);
+            addAllVariableListeners();
+            dispatchEvent(new IndigoVariableChangeEvent(tempVariable));
         }
     }
 }

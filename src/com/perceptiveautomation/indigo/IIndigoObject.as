@@ -12,6 +12,9 @@ package com.perceptiveautomation.indigo
     [Bindable]
     public interface IIndigoObject extends IEventDispatcher
     {
+        function get id():String;
+        function set id(value:String):void;
+
         function get name():String;
         function set name(value:String):void;
     }

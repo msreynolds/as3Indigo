@@ -11,7 +11,7 @@ import com.perceptiveautomation.indigo.vo.*;
 		{
 			super(xmlNode);
 			
-			this._brightness = xmlNode.BrightValue/10; 
+			//this._brightness = xmlNode.BrightValue/10;
 				
 			if (!this._brightness)
 				this._brightness = 0;

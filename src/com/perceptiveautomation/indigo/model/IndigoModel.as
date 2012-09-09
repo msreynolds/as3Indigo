@@ -6,7 +6,6 @@ package com.perceptiveautomation.indigo.model
     import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
     import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
     import com.perceptiveautomation.indigo.variable.IndigoVariable;
-    import com.perceptiveautomation.indigo.vo.AbstractIndigoDevice;
     import com.perceptiveautomation.indigo.vo.IndigoRegInfo;
 
     import flash.errors.IllegalOperationError;
@@ -62,23 +61,18 @@ package com.perceptiveautomation.indigo.model
 		
         //Local cache of the Action Group list.
         private var _actionGroupList:ArrayCollection = new ArrayCollection();
-        public var actionGroupDictionary:Dictionary;
 
 		//Local cache of the Device list.
 		private var _deviceList:ArrayCollection = new ArrayCollection();
-        public var deviceDictionary:Dictionary;
 
         //Local cache of the Schedules list.
-        public var scheduleDictionary:Dictionary;
         private var _scheduleList:ArrayCollection = new ArrayCollection();
 
         //Local cache of the Trigger list.
         private var _triggerList:ArrayCollection = new ArrayCollection();
-        public var triggerDictionary:Dictionary;
 
         //Local cache of the Variable list.
         private var _variableList:ArrayCollection = new ArrayCollection();
-        public var variableDictionary:Dictionary;
 
         //Local cache of the Update Time
         public var updateTimeInfo:String;
@@ -103,23 +97,21 @@ package com.perceptiveautomation.indigo.model
 				
 		public function set deviceList(value:ArrayCollection):void
 		{
-			if (_deviceList !=  value)
-			{
-				_deviceList = value;
-				
-				deviceDictionary = new Dictionary(true);
-				
-				var len:int = _deviceList?_deviceList.length:0;
-				var tempDevice:IIndigoDevice;
-				for (var i:int=0; i < len; i++)
-				{
-					tempDevice = _deviceList.getItemAt(i) as IIndigoDevice;
-					if (tempDevice)
-					{
-						deviceDictionary[tempDevice.name] = tempDevice;
-					}
-				}	
-			}
+            if (!this._deviceList)
+            {
+                this._deviceList = new ArrayCollection();
+            }
+
+            if (value)
+            {
+                this._deviceList.source = value.source;
+            }
+            else
+            {
+                this._deviceList.source = null;
+            }
+
+            this._deviceList.refresh();
 					
 			dispatchEvent( new Event('deviceListChanged') );
 		}
@@ -128,10 +120,10 @@ package com.perceptiveautomation.indigo.model
 		{
 			var result:ArrayCollection = new ArrayCollection;
 			var len:int = this._deviceList?this._deviceList.length:0;
-			var tempDevice:AbstractIndigoDevice;
+			var tempDevice:IIndigoDevice;
 			for (var i:int=0; i < len; i++)
 			{
-				tempDevice = this._deviceList.getItemAt(i) as AbstractIndigoDevice;
+				tempDevice = this._deviceList.getItemAt(i) as IIndigoDevice;
 				if (tempDevice && tempDevice.description.indexOf(type) > -1)
 				{
 					result.addItem( tempDevice );
@@ -149,24 +141,22 @@ package com.perceptiveautomation.indigo.model
 				
 		public function set actionGroupList(value:ArrayCollection):void
 		{
-			if (_actionGroupList !=  value)
-			{
-				_actionGroupList = value;
-				
-				actionGroupDictionary = new Dictionary(true);
-				
-				var len:int = _actionGroupList?_actionGroupList.length:0;
-				var tempActionGroup:IIndigoActionGroup;
-				for (var i:int=0; i < len; i++)
-				{
-					tempActionGroup = _actionGroupList.getItemAt(i) as IIndigoActionGroup;
-					if (tempActionGroup)
-					{
-						actionGroupDictionary[tempActionGroup.name] = tempActionGroup;
-					}
-				}	
-			}
-					
+            if (!this._actionGroupList)
+            {
+                this._actionGroupList = new ArrayCollection();
+            }
+
+            if (value)
+            {
+                this._actionGroupList.source = value.source;
+            }
+            else
+            {
+                this._actionGroupList.source = null;
+            }
+
+            this._actionGroupList.refresh();
+
 			dispatchEvent( new Event('actionGroupListChanged') );
 		} 
 		
@@ -179,27 +169,20 @@ package com.perceptiveautomation.indigo.model
         public function set triggerList(value:ArrayCollection):void
         {
             if (!this._triggerList)
+            {
                 this._triggerList = new ArrayCollection();
+            }
 
             if (value)
             {
                 this._triggerList.source = value.source;
-
-                triggerDictionary = new Dictionary(true);
-
-                var tempTrigger:IndigoTrigger;
-                var len:int = value.length;
-                for (var i:int=0; i < len; i++)
-                {
-                    tempTrigger = value.getItemAt(i) as IndigoTrigger;
-                    triggerDictionary[tempTrigger.name] = tempTrigger;
-                }
-
-                this._triggerList.refresh();
             }
             else
+            {
                 this._triggerList.source = null;
+            }
 
+            this._triggerList.refresh();
 
             dispatchEvent(new Event('triggerListChanged'));
         }
@@ -213,28 +196,21 @@ package com.perceptiveautomation.indigo.model
 		public function set variableList(value:ArrayCollection):void
 		{
 			if (!this._variableList)
+            {
 				this._variableList = new ArrayCollection();
-				
+            }
+
 			if (value)	
 			{	
 				this._variableList.source = value.source;
-				
-				variableDictionary = new Dictionary(true);
-				
-				var tempVariable:IndigoVariable;
-				var len:int = value.length;
-				for (var i:int=0; i < len; i++)
-				{
-					tempVariable = value.getItemAt(i) as IndigoVariable;
-					variableDictionary[tempVariable.name] = tempVariable.value;
-				}	
-				
-				this._variableList.refresh();
 			}
 			else
+            {
 				this._variableList.source = null;
-				
-			
+            }
+
+            this._variableList.refresh();
+
 			dispatchEvent(new Event('variableListChanged'));
 		}
 
@@ -247,27 +223,20 @@ package com.perceptiveautomation.indigo.model
         public function set scheduleList(value:ArrayCollection):void
         {
             if (!this._scheduleList)
+            {
                 this._scheduleList = new ArrayCollection();
+            }
 
             if (value)
             {
                 this._scheduleList.source = value.source;
-
-                scheduleDictionary = new Dictionary(true);
-
-                var tempSchedule:IndigoSchedule;
-                var len:int = value.length;
-                for (var i:int=0; i < len; i++)
-                {
-                    tempSchedule = value.getItemAt(i) as IndigoSchedule;
-                    scheduleDictionary[tempSchedule.name] = tempSchedule;
-                }
-
-                this._scheduleList.refresh();
             }
             else
+            {
                 this._scheduleList.source = null;
+            }
 
+            this._scheduleList.refresh();
 
             dispatchEvent(new Event('scheduleListChanged'));
         }

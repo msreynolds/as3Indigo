@@ -10,30 +10,22 @@ package com.perceptiveautomation.indigo.util
     import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
     import com.perceptiveautomation.indigo.actiongroup.IndigoActionGroup;
     import com.perceptiveautomation.indigo.device.BaseIndigoDevice;
-    import com.perceptiveautomation.indigo.device.DimmerDevice;
     import com.perceptiveautomation.indigo.device.IIndigoDevice;
-    import com.perceptiveautomation.indigo.device.IOLincDevice;
-    import com.perceptiveautomation.indigo.device.IRTransmitterDevice;
     import com.perceptiveautomation.indigo.device.IndigoDeviceFactory;
-    import com.perceptiveautomation.indigo.device.OnOffDevice;
-    import com.perceptiveautomation.indigo.device.ThermostatDevice;
-    import com.perceptiveautomation.indigo.device.TimerDevice;
     import com.perceptiveautomation.indigo.schedule.IIndigoSchedule;
     import com.perceptiveautomation.indigo.schedule.IndigoSchedule;
     import com.perceptiveautomation.indigo.trigger.IIndigoTrigger;
     import com.perceptiveautomation.indigo.trigger.IndigoTrigger;
     import com.perceptiveautomation.indigo.variable.IIndigoVariable;
     import com.perceptiveautomation.indigo.variable.IndigoVariable;
-    import com.perceptiveautomation.indigo.vo.AbstractIndigoDevice;
 
     import mx.collections.ArrayCollection;
+    import mx.collections.IList;
 
     public class IndigoObjectUtil
     {
-//        public function IndigoObjectUtil()
-//        {
-//        }
 
+        // CREATE
         public static function createIndigoActionGroup(xmlNode:XML):IIndigoActionGroup
         {
             return new IndigoActionGroup(xmlNode);
@@ -59,32 +51,25 @@ package com.perceptiveautomation.indigo.util
             return new IndigoVariable(xmlNode);
         }
 
-        public static function createDeviceList(packetData:XMLList):ArrayCollection
-        {
-            var len:int = packetData..Device.length();
-            var tempDeviceCollection:ArrayCollection = new ArrayCollection();
-            var tempDevice:IIndigoDevice;
-            for(var i:int=0; i<len;i++)
-            {
-                tempDevice = createIndigoDevice(packetData..Device[i]);
-                tempDeviceCollection.addItem(tempDevice);
-            }
 
-            return tempDeviceCollection;
+        // CREATE LIST
+        public static function createDeviceList(xmlData:XMLList):ArrayCollection
+        {
+            return IndigoDeviceFactory.createIndigoDeviceList(xmlData) as ArrayCollection;
         }
 
-        public static function createActionGroupList(packetData:XMLList):ArrayCollection
+        public static function createActionGroupList(xmlData:XMLList):ArrayCollection
         {
-            var len:int = packetData..ActionGroup.length();
+            var len:int = xmlData..ActionGroup.length();
             var tempActionGroupCollection:ArrayCollection = new ArrayCollection();
             var tempActionGroup:IndigoActionGroup;
             for(var i:int=0; i<len;i++)
             {
-                tempActionGroup = new IndigoActionGroup(packetData..ActionGroup[i]);
-                //tempActionGroup.addEventListener("runNow", handleActionGroupRunNow, false, 0, true);
+                tempActionGroup = new IndigoActionGroup(xmlData..ActionGroup[i]);
                 tempActionGroupCollection.addItem(tempActionGroup);
             }
             return tempActionGroupCollection;
+            //return IndigoActionGroupFactory.createActionGroupList(xmlData);
         }
 
         public static function createVariableList(packetData:XMLList):ArrayCollection
@@ -95,7 +80,6 @@ package com.perceptiveautomation.indigo.util
             for(var i:int=0; i<len;i++)
             {
                 tempVariable = new IndigoVariable(packetData..Variable[i]);
-                //tempVariable.addEventListener("valueChanged", handleVariableValueChange, false, 0, true);
                 tempVariableCollection.addItem(tempVariable);
             }
             return tempVariableCollection;
@@ -127,73 +111,185 @@ package com.perceptiveautomation.indigo.util
             return tempScheduleCollection;
         }
 
-        public static function replaceActionGroup(packetData:XMLList, collection:ArrayCollection):IIndigoActionGroup
+
+        // GET
+        public static function getActionGroup(actionGroup:IIndigoActionGroup, collection:ArrayCollection):IIndigoActionGroup
         {
-            var updatedIndigoActionGroup:IndigoActionGroup = new IndigoActionGroup(packetData.ActionGroup);
-            var tempIndigoActionGroup:IIndigoActionGroup;
+            var tempActionGroup:IIndigoActionGroup;
             var len:int = collection?collection.length:0;
             for (var i:int = 0; i < len; i++)
             {
-                tempIndigoActionGroup = collection.getItemAt(i) as IIndigoActionGroup;
-                if (updatedIndigoActionGroup.name == tempIndigoActionGroup.name)
+                tempActionGroup = collection.getItemAt(i) as IIndigoActionGroup;
+                if (actionGroup.id == tempActionGroup.id)
                 {
-                    // TODO:
-                    //tempIndigoActionGroup.fill(updatedIndigoActionGroup);
-                    return tempIndigoActionGroup;
+                    return tempActionGroup;
                 }
             }
 
             return null;
         }
 
-        public static function replaceDevice(packetData:XMLList, collection:ArrayCollection):IIndigoDevice
+        public static function getDevice(updatedIndigoDevice:IIndigoDevice, collection:ArrayCollection):IIndigoDevice
         {
-            var updatedIndigoDevice:BaseIndigoDevice = new BaseIndigoDevice(packetData.Device);
-            var tempIndigoDevice:BaseIndigoDevice;
+            var tempDevice:IIndigoDevice;
             var len:int = collection.length;
             for (var i:int = 0; i < len; i++)
             {
-                tempIndigoDevice = collection.getItemAt(i) as BaseIndigoDevice;
-                if (updatedIndigoDevice.name == tempIndigoDevice.name)
+                tempDevice = collection.getItemAt(i) as BaseIndigoDevice;
+                if (updatedIndigoDevice.name == tempDevice.name)
                 {
-                    tempIndigoDevice.fill(updatedIndigoDevice);
-                    return tempIndigoDevice;
+                    return tempDevice;
                 }
             }
 
             return null;
         }
 
-        public static function replaceSchedule(packetData:XMLList, collection:ArrayCollection):IIndigoSchedule
+        public static function getSchedule(schedule:IIndigoSchedule, collection:ArrayCollection):IIndigoSchedule
         {
-            var updatedIndigoSchedule:IndigoSchedule = new IndigoSchedule(packetData.Variable);
-            var tempIndigoSchedule:IIndigoSchedule;
+            var tempSchedule:IIndigoSchedule;
             var len:int = collection?collection.length:0;
             for (var i:int = 0; i < len; i++)
             {
-                tempIndigoSchedule = collection.getItemAt(i) as IIndigoSchedule;
-                if (updatedIndigoSchedule.name == tempIndigoSchedule.name)
+                tempSchedule = collection.getItemAt(i) as IIndigoSchedule;
+                if (schedule.id == tempSchedule.id)
                 {
-                    // TODO:
-                    //tempIndigoSchedule.fill(updatedIndigoSchedule);
-                    return tempIndigoSchedule;
+                    return tempSchedule;
                 }
             }
 
             return null;
         }
 
-        public static function replaceTrigger(packetData:XMLList, collection:ArrayCollection):IIndigoTrigger
+        public static function getTrigger(trigger:IIndigoTrigger, collection:ArrayCollection):IIndigoTrigger
         {
-            var updatedIndigoTrigger:IndigoTrigger = new IndigoTrigger(packetData.Variable);
+            var tempTrigger:IIndigoTrigger;
+            var len:int = collection?collection.length:0;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempTrigger = collection.getItemAt(i) as IIndigoTrigger;
+                if (trigger.id == tempTrigger.id)
+                {
+                    return tempTrigger;
+                }
+            }
+
+            return null;
+        }
+
+        public static function getVariable(variable:IIndigoVariable, collection:ArrayCollection):IIndigoVariable
+        {
+            var tempVariable:IIndigoVariable;
+            var len:int = collection?collection.length:0;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempVariable = collection.getItemAt(i) as IndigoVariable;
+                if (variable.id == tempVariable.id)
+                {
+                    return tempVariable;
+                }
+            }
+
+            return null;
+        }
+
+
+        // ADD
+        public static function addActionGroup(actionGroup:IIndigoActionGroup, collection:ArrayCollection):IIndigoActionGroup
+        {
+            collection.addItem(actionGroup)
+            return actionGroup;
+        }
+
+        public static function addDevice(device:IIndigoDevice, collection:ArrayCollection):IIndigoDevice
+        {
+            collection.addItem(device);
+            return device;
+        }
+
+        public static function addSchedule(schedule:IIndigoSchedule, collection:ArrayCollection):IIndigoSchedule
+        {
+            collection.addItem(schedule);
+            return schedule;
+        }
+
+        public static function addTrigger(trigger:IIndigoTrigger, collection:ArrayCollection):IIndigoTrigger
+        {
+            collection.addItem(trigger);
+            return trigger;
+        }
+
+        public static function addVariable(variable:IIndigoVariable, collection:ArrayCollection):IIndigoVariable
+        {
+            collection.addItem(variable);
+            return variable;
+        }
+
+
+        // REPLACE
+        public static function replaceActionGroup(actionGroup:IIndigoActionGroup, collection:ArrayCollection):IIndigoActionGroup
+        {
+            var tempActionGroup:IIndigoActionGroup;
+            var len:int = collection?collection.length:0;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempActionGroup = collection.getItemAt(i) as IIndigoActionGroup;
+                if (actionGroup.id == tempActionGroup.id)
+                {
+                    // TODO: write fill method
+                    //tempActionGroup.fill(actionGroup);
+                    return tempActionGroup;
+                }
+            }
+
+            return null;
+        }
+
+        public static function replaceDevice(device:IIndigoDevice, collection:ArrayCollection):IIndigoDevice
+        {
+            var tempDevice:IIndigoDevice;
+            var len:int = collection.length;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempDevice = collection.getItemAt(i) as BaseIndigoDevice;
+                if (device.id == tempDevice.id)
+                {
+                    tempDevice.fill(device);
+                    return tempDevice;
+                }
+            }
+
+            return null;
+        }
+
+        public static function replaceSchedule(schedule:IIndigoSchedule, collection:ArrayCollection):IIndigoSchedule
+        {
+            var tempSchedule:IIndigoSchedule;
+            var len:int = collection?collection.length:0;
+            for (var i:int = 0; i < len; i++)
+            {
+                tempSchedule = collection.getItemAt(i) as IIndigoSchedule;
+                if (schedule.id == tempSchedule.id)
+                {
+                    // TODO: write fill method
+                    //tempIndigoSchedule.fill(updatedIndigoSchedule);
+                    return tempSchedule;
+                }
+            }
+
+            return null;
+        }
+
+        public static function replaceTrigger(trigger:IIndigoTrigger, collection:ArrayCollection):IIndigoTrigger
+        {
             var tempIndigoTrigger:IIndigoTrigger;
             var len:int = collection?collection.length:0;
             for (var i:int = 0; i < len; i++)
             {
                 tempIndigoTrigger = collection.getItemAt(i) as IIndigoTrigger;
-                if (updatedIndigoTrigger.name == tempIndigoTrigger.name)
+                if (trigger.name == tempIndigoTrigger.name)
                 {
-                    // TODO:
+                    // TODO: write fill method
                     //tempIndigoTrigger.fill(updatedIndigoTrigger);
                     return tempIndigoTrigger;
                 }
@@ -202,22 +298,80 @@ package com.perceptiveautomation.indigo.util
             return null;
         }
 
-        public static function replaceVariable(packetData:XMLList, collection:ArrayCollection):IIndigoVariable
+        public static function replaceVariable(variable:IIndigoVariable, collection:ArrayCollection):IIndigoVariable
         {
-            var updatedIndigoVariable:IndigoVariable = new IndigoVariable(packetData.Variable);
-            var tempIndigoVariable:IndigoVariable;
+            var tempVariable:IndigoVariable;
             var len:int = collection?collection.length:0;
             for (var i:int = 0; i < len; i++)
             {
-                tempIndigoVariable = collection.getItemAt(i) as IndigoVariable;
-                if (updatedIndigoVariable.name == tempIndigoVariable.name)
+                tempVariable = collection.getItemAt(i) as IndigoVariable;
+                if (variable.id == tempVariable.id)
                 {
-                    tempIndigoVariable.value = updatedIndigoVariable.value;
-                    return tempIndigoVariable;
+                    // TODO: write fill method
+                    //tempVariable.fill(variable);
+                    tempVariable.value = variable.value;
+                    return tempVariable;
                 }
             }
 
             return null;
+        }
+
+
+        // ADD OR REPLACE
+        public static function addOrReplaceActionGroup(actionGroup:IIndigoActionGroup, collection:ArrayCollection):IIndigoActionGroup
+        {
+            var tempActionGroup:IIndigoActionGroup = replaceActionGroup(actionGroup, collection);
+            if (tempActionGroup == null)
+            {
+                tempActionGroup = addActionGroup(actionGroup, collection);
+            }
+
+            return tempActionGroup;
+        }
+
+        public static function addOrReplaceDevice(device:IIndigoDevice, collection:ArrayCollection):IIndigoDevice
+        {
+            var tempDevice:IIndigoDevice = replaceDevice(device, collection);
+            if (tempDevice == null)
+            {
+                tempDevice = addDevice(device, collection);
+            }
+
+            return tempDevice;
+        }
+
+        public static function addOrReplaceSchedule(schedule:IIndigoSchedule, collection:ArrayCollection):IIndigoSchedule
+        {
+            var tempSchedule:IIndigoSchedule = replaceSchedule(schedule, collection);
+            if (tempSchedule == null)
+            {
+                tempSchedule = addSchedule(schedule, collection);
+            }
+
+            return tempSchedule;
+        }
+
+        public static function addOrReplaceTrigger(trigger:IIndigoTrigger, collection:ArrayCollection):IIndigoTrigger
+        {
+            var tempTrigger:IIndigoTrigger = replaceTrigger(trigger, collection);
+            if (tempTrigger == null)
+            {
+                tempTrigger = addTrigger(trigger, collection);
+            }
+
+            return tempTrigger;
+        }
+
+        public static function addOrReplaceVariable(variable:IIndigoVariable, collection:ArrayCollection):IIndigoVariable
+        {
+            var tempVariable:IIndigoVariable = replaceVariable(variable, collection);
+            if (tempVariable == null)
+            {
+                tempVariable = addVariable(variable, collection);
+            }
+
+            return tempVariable;
         }
 
     }

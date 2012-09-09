@@ -7,52 +7,92 @@
  */
 package com.perceptiveautomation.indigo.device
 {
+    import mx.collections.ArrayCollection;
+    import mx.collections.IList;
+
     public class IndigoDeviceFactory
     {
         public function IndigoDeviceFactory()
         {
         }
 
-        public static function createIndigoDevice(xmlNode:XML):IIndigoDevice
+        public static function createIndigoDevice(xmlData:XML):IIndigoDevice
         {
-            if ( xmlNode.TypeName.indexOf('Thermostat') > -1 || xmlNode.TypeName.indexOf('Venstar T1800') > -1 )
+            // Socket XML format
+            var socketTypeCode:String = "TypeName";
+            var restTypeCode:String = "type";
+            var typeCode:String = "";
+
+            var socketIsOnCode:String = "IsOn";
+            var restIsOnCode:String = "isOn";
+            var isOnCode:String = "";
+
+            typeCode = xmlData.hasOwnProperty(socketTypeCode) ? socketTypeCode : "";
+            if (typeCode == "")
             {
-                return new ThermostatDevice(xmlNode);
+                typeCode = xmlData.hasOwnProperty(restTypeCode) ? restTypeCode : "";
             }
 
-            else if (xmlNode.TypeName.indexOf('Dimmer') > -1 || xmlNode.TypeName.indexOf('LampLinc V2') > -1 )
+            isOnCode = xmlData.hasOwnProperty(socketIsOnCode) ? socketIsOnCode : "";
+            if (isOnCode == "")
             {
-                return new DimmerDevice(xmlNode);
+                isOnCode = xmlData.hasOwnProperty(restIsOnCode) ? restIsOnCode : "";
             }
 
-            else if (xmlNode.IsOn == "true" || xmlNode.IsOn == "false")
+
+            if ( xmlData[typeCode].indexOf('Thermostat') > -1 || xmlData[typeCode].indexOf('Venstar T1800') > -1 )
             {
-                return new OnOffDevice(xmlNode);
+                return new ThermostatDevice(xmlData);
             }
 
-            else if (xmlNode.TypeName.indexOf("IR-Linc Transmitter") > -1)
+            else if (xmlData[typeCode].indexOf('Dimmer') > -1 || xmlData[typeCode].indexOf('LampLinc V2') > -1 )
             {
-                return new IRTransmitterDevice(xmlNode);
+                return new DimmerDevice(xmlData);
             }
 
-            else if (xmlNode.TypeName.indexOf("Timer") > -1)
+            else if (xmlData[isOnCode] == "true" || xmlData.IsOn == "false")
             {
-                return new TimerDevice(xmlNode);
+                return new OnOffDevice(xmlData);
             }
 
-            else if (xmlNode.TypeName.indexOf("I/O-Linc") > -1)
+            else if (xmlData[typeCode].indexOf("IR-Linc Transmitter") > -1)
             {
-                return new IOLincDevice(xmlNode);
+                return new IRTransmitterDevice(xmlData);
             }
 
-            else if (xmlNode.TypeName.indexOf("EZIO8SA") > -1)
+            else if (xmlData[typeCode].indexOf("Timer") > -1)
             {
-                return new IOLincDevice(xmlNode);
+                return new TimerDevice(xmlData);
+            }
+
+            else if (xmlData[typeCode].indexOf("I/O-Linc") > -1)
+            {
+                return new IOLincDevice(xmlData);
+            }
+
+            else if (xmlData[typeCode].indexOf("EZIO8SA") > -1)
+            {
+                return new IOLincDevice(xmlData);
             }
 
             // Unless we have every single device type listed here, we need to keep this around as a safety net.
             // But we'd prefer to never instantiate a Base object directly
-            return new BaseIndigoDevice(xmlNode);
+            return new BaseIndigoDevice(xmlData);
+        }
+
+        public static function createIndigoDeviceList(xmlData:XMLList):IList
+        {
+            var deviceList:ArrayCollection = new ArrayCollection();
+
+            var len:int = xmlData..Device.length();
+            var tempDevice:IIndigoDevice;
+            for(var i:int=0; i<len;i++)
+            {
+                tempDevice = createIndigoDevice(xmlData..Device[i]);
+                deviceList.addItem(tempDevice);
+            }
+
+            return deviceList;
         }
     }
 }

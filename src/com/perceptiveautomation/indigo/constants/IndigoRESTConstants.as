@@ -15,7 +15,7 @@ package com.perceptiveautomation.indigo.constants
         public static const INDIGO_REST_STATE_CONNECTED:String = "Connecting to RESTful service resulted";
 
         //Indigo RESTful endpoints
-        public static const INDIGO_REST_ENDPOINT_ACTION_GROUPS:String = "/actiongroups.xml";
+        public static const INDIGO_REST_ENDPOINT_ACTION_GROUPS:String = "/actions.xml";
         public static const INDIGO_REST_ENDPOINT_DEVICES:String = "/devices.xml";
         public static const INDIGO_REST_ENDPOINT_SCHEDULES:String = "/schedules.xml";
         public static const INDIGO_REST_ENDPOINT_TRIGGERS:String = "/triggers.xml";

@@ -5,15 +5,48 @@ package com.perceptiveautomation.indigo.trigger
 	
 	public class IndigoTrigger extends EventDispatcher implements IIndigoTrigger
 	{
-		private var _name:String;
+		private var _id:String;
+        private var _name:String;
         private var _type:String;
         private var _folder:String;
-		
+
 		public function IndigoTrigger(xmlNode:Object)
 		{
-			this._name = xmlNode.Name;
+            if (xmlNode.hasOwnProperty('ID'))
+            {
+                this._id = xmlNode.ID;
+            }
+
+            if (xmlNode.hasOwnProperty('id'))
+            {
+                this._id = xmlNode.id;
+            }
+
+            if (xmlNode.hasOwnProperty('Name'))
+            {
+                this._name = xmlNode.Name;
+            }
+
+            if (xmlNode.hasOwnProperty('name'))
+            {
+                this._name = xmlNode.name;
+            }
+
 		}
-		
+
+        [Bindable(event="idChanged")]
+        public function get id():String
+        {
+            return _id;
+        }
+
+        public function set id(value:String):void
+        {
+            if (_id == value) return;
+            _id = value;
+            dispatchEvent(new Event("idChanged"));
+        }
+
 		[Bindable(event='nameChanged')]
 		public function get name():String
 		{

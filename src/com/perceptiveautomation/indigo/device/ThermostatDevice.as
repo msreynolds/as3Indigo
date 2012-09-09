@@ -12,11 +12,11 @@ package com.perceptiveautomation.indigo.device
 		{
 			super(xmlNode);
 			
-			if (xmlNode.TypeName.indexOf('Venstar') > -1)
-				this._make = "Venstar";
-			
-			if (xmlNode.TypeName.indexOf('T1800') > -1 )
-				this._model = "T1800";
+//			if (xmlNode.TypeName.indexOf('Venstar') > -1)
+//				this._make = "Venstar";
+//
+//			if (xmlNode.TypeName.indexOf('T1800') > -1 )
+//				this._model = "T1800";
 			
 			_temperature = Number(xmlNode.DeviceDisplayLongState);
 			_heatPoint = Number(xmlNode.ActiveSetpointHeat);

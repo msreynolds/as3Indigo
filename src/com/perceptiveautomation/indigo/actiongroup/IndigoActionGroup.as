@@ -8,16 +8,59 @@ package com.perceptiveautomation.indigo.actiongroup
 	[Bindable]
 	public class IndigoActionGroup extends EventDispatcher implements IIndigoActionGroup
 	{		
-		private var _name:String;
+		private var _id:String;
+
+        private var _name:String;
         private var _description:String;
         private var _folder:String;
 
 		public function IndigoActionGroup(xmlNode:XML)
 		{
-			this._name = xmlNode.Name;
-            this._description = xmlNode.Description;
+            if (xmlNode.hasOwnProperty('ID'))
+            {
+                this._id = xmlNode.ID;
+            }
+
+            if (xmlNode.hasOwnProperty('id'))
+            {
+                this._id = xmlNode.id;
+            }
+
+            if (xmlNode.hasOwnProperty('Name'))
+            {
+                this._name = xmlNode.Name;
+            }
+
+            if (xmlNode.hasOwnProperty('name'))
+            {
+                this._name = xmlNode.name;
+            }
+
+            if (xmlNode.hasOwnProperty('Description'))
+            {
+                this._description = xmlNode.Description;
+            }
+
+            if (xmlNode.hasOwnProperty('description'))
+            {
+                this._description = xmlNode.description;
+            }
+
             this._folder = xmlNode.FolderID;
 		}
+
+        [Bindable(event="idChanged")]
+        public function get id():String
+        {
+            return _id;
+        }
+
+        public function set id(value:String):void
+        {
+            if (_id == value) return;
+            _id = value;
+            dispatchEvent(new Event("idChanged"));
+        }
 
 		[Bindable(event='nameChanged')]
 		public function get name():String
