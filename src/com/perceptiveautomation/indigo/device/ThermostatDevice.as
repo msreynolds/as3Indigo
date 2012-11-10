@@ -1,5 +1,7 @@
 package com.perceptiveautomation.indigo.device
 {
+    import flash.events.Event;
+
     public class ThermostatDevice extends OnOffDevice
 	{
 		private var _make:String;
@@ -11,59 +13,74 @@ package com.perceptiveautomation.indigo.device
 		public function ThermostatDevice(xmlNode:Object)
 		{
 			super(xmlNode);
-			
-//			if (xmlNode.TypeName.indexOf('Venstar') > -1)
-//				this._make = "Venstar";
-//
-//			if (xmlNode.TypeName.indexOf('T1800') > -1 )
-//				this._model = "T1800";
-			
-			_temperature = Number(xmlNode.DeviceDisplayLongState);
-			_heatPoint = Number(xmlNode.ActiveSetpointHeat);
-			_coolPoint = Number(xmlNode.ActiveSetpointCool);
-		}
-		
-		public function get make():String
-		{
-			return this._make
-		}
-		
-		public function get model():String
-		{
-			return this._model;
-		}	
-
-		public function get heatPoint():Number
-		{
-			return _heatPoint;
 		}
 
-		public function set heatPoint(value:Number):void
-		{
-			_heatPoint = value;
-		}
+        [Bindable(event="makeChanged")]
+        public function get make():String
+        {
+            return _make;
+        }
 
-		public function get coolPoint():Number
-		{
-			return _coolPoint;
-		}
+        public function set make(value:String):void
+        {
+            if (_make == value) return;
+            _make = value;
+            dispatchEvent(new Event("makeChanged"));
+        }
 
-		public function set coolPoint(value:Number):void
-		{
-			_coolPoint = value;
-		}
+        [Bindable(event="modelChanged")]
+        public function get model():String
+        {
+            return _model;
+        }
 
-		public function get temperature():Number
-		{
-			return _temperature;
-		}
+        public function set model(value:String):void
+        {
+            if (_model == value) return;
+            _model = value;
+            dispatchEvent(new Event("modelChanged"));
+        }
 
-		public function set temperature(value:Number):void
-		{
-			_temperature = value;
-		}
+        [Bindable(event="temperatureChanged")]
+        public function get temperature():Number
+        {
+            return _temperature;
+        }
 
-		override public function fill(value:IIndigoDevice):void
+        public function set temperature(value:Number):void
+        {
+            if (_temperature == value) return;
+            _temperature = value;
+            dispatchEvent(new Event("temperatureChanged"));
+        }
+
+        [Bindable(event="heatPointChanged")]
+        public function get heatPoint():Number
+        {
+            return _heatPoint;
+        }
+
+        public function set heatPoint(value:Number):void
+        {
+            if (_heatPoint == value) return;
+            _heatPoint = value;
+            dispatchEvent(new Event("heatPointChanged"));
+        }
+
+        [Bindable(event="coolPointChanged")]
+        public function get coolPoint():Number
+        {
+            return _coolPoint;
+        }
+
+        public function set coolPoint(value:Number):void
+        {
+            if (_coolPoint == value) return;
+            _coolPoint = value;
+            dispatchEvent(new Event("coolPointChanged"));
+        }
+
+        override public function fill(value:IIndigoDevice):void
 		{
 			super.fill( value );
 			if (value is ThermostatDevice)

@@ -7,6 +7,8 @@
  */
 package com.perceptiveautomation.indigo.device
 {
+    import com.perceptiveautomation.indigo.device.OnOffDevice;
+
     import mx.collections.ArrayCollection;
     import mx.collections.IList;
 
@@ -18,7 +20,8 @@ package com.perceptiveautomation.indigo.device
 
         public static function createIndigoDevice(xmlData:XML):IIndigoDevice
         {
-            // Socket XML format
+            var newDevice:IIndigoDevice;
+
             var socketTypeCode:String = "TypeName";
             var restTypeCode:String = "type";
             var typeCode:String = "";
@@ -42,17 +45,51 @@ package com.perceptiveautomation.indigo.device
 
             if ( xmlData[typeCode].indexOf('Thermostat') > -1 || xmlData[typeCode].indexOf('Venstar T1800') > -1 )
             {
-                return new ThermostatDevice(xmlData);
+                newDevice = new ThermostatDevice(xmlData);
+                if (xmlData[typeCode].indexOf('Venstar') > -1)
+                {
+                    ThermostatDevice(newDevice).make = "Venstar";
+                }
+
+			    if (xmlData[typeCode].indexOf('T1800') > -1 )
+                {
+                    ThermostatDevice(newDevice).model = "T1800";
+                }
+
+                ThermostatDevice(newDevice).temperature = Number(xmlData.DeviceDisplayLongState);
+                ThermostatDevice(newDevice).heatPoint = Number(xmlData.ActiveSetpointHeat);
+                ThermostatDevice(newDevice).coolPoint = Number(xmlData.ActiveSetpointCool);
+
+                return newDevice;
             }
 
             else if (xmlData[typeCode].indexOf('Dimmer') > -1 || xmlData[typeCode].indexOf('LampLinc V2') > -1 )
             {
-                return new DimmerDevice(xmlData);
+                newDevice = new DimmerDevice(xmlData);
+                var brightValue:Number;
+
+                if (xmlData.hasOwnProperty("BrightValue"))
+                {
+                    brightValue = xmlData.BrightValue/10;
+                }
+
+                if (xmlData.hasOwnProperty("brightness"))
+                {
+                    brightValue = xmlData.brightness;
+                }
+
+                DimmerDevice(newDevice).brightness = brightValue;
+
+                return newDevice;
             }
 
-            else if (xmlData[isOnCode] == "true" || xmlData.IsOn == "false")
+            else if ( isOnCode != "")
             {
-                return new OnOffDevice(xmlData);
+                newDevice = new OnOffDevice(xmlData);
+
+                OnOffDevice(newDevice).isOn = xmlData[isOnCode].toLowerCase() == "true";
+
+                return newDevice;
             }
 
             else if (xmlData[typeCode].indexOf("IR-Linc Transmitter") > -1)

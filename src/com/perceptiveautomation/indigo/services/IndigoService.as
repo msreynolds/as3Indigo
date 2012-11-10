@@ -1,12 +1,9 @@
 package com.perceptiveautomation.indigo.services
 {
     import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
-    import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
     import com.perceptiveautomation.indigo.constants.IndigoAPIMode;
     import com.perceptiveautomation.indigo.constants.IndigoRestConstants;
     import com.perceptiveautomation.indigo.constants.IndigoSocketConstants;
-    import com.perceptiveautomation.indigo.device.BaseIndigoDevice;
-    import com.perceptiveautomation.indigo.device.IIndigoDevice;
     import com.perceptiveautomation.indigo.device.IIndigoDevice;
     import com.perceptiveautomation.indigo.device.IIndigoDimmerDevice;
     import com.perceptiveautomation.indigo.device.IIndigoOnOffDevice;
@@ -18,45 +15,25 @@ package com.perceptiveautomation.indigo.services
     import com.perceptiveautomation.indigo.events.IndigoVariableChangeEvent;
     import com.perceptiveautomation.indigo.model.IndigoModel;
     import com.perceptiveautomation.indigo.schedule.IIndigoSchedule;
-    import com.perceptiveautomation.indigo.schedule.IIndigoSchedule;
-    import com.perceptiveautomation.indigo.schedule.IIndigoSchedule;
-    import com.perceptiveautomation.indigo.trigger.IIndigoTrigger;
     import com.perceptiveautomation.indigo.trigger.IIndigoTrigger;
     import com.perceptiveautomation.indigo.util.HashUtil;
     import com.perceptiveautomation.indigo.util.IndigoObjectUtil;
-    import com.perceptiveautomation.indigo.util.IndigoObjectUtil;
-    import com.perceptiveautomation.indigo.util.IndigoRestXMLUtil;
     import com.perceptiveautomation.indigo.util.IndigoSocketXMLUtil;
     import com.perceptiveautomation.indigo.variable.IIndigoVariable;
-    import com.perceptiveautomation.indigo.variable.IIndigoVariable;
-    import com.perceptiveautomation.indigo.variable.IndigoVariable;
 
     import flash.events.DataEvent;
     import flash.events.Event;
     import flash.events.EventDispatcher;
     import flash.events.HTTPStatusEvent;
-    import flash.events.IEventDispatcher;
     import flash.events.IOErrorEvent;
     import flash.events.ProgressEvent;
     import flash.events.SecurityErrorEvent;
     import flash.net.URLLoader;
     import flash.net.URLRequest;
-    import flash.net.URLRequestMethod;
     import flash.net.XMLSocket;
-    import flash.xml.XMLNode;
 
-    import mx.collections.ArrayCollection;
-    import mx.collections.ICollectionView;
-    import mx.collections.IList;
-    import mx.collections.XMLListCollection;
-    import mx.rpc.AsyncToken;
     import mx.rpc.events.FaultEvent;
-    import mx.rpc.events.ResultEvent;
-    import mx.rpc.http.HTTPService;
     import mx.utils.StringUtil;
-
-    import spark.collections.Sort;
-    import spark.collections.SortField;
 
     public class IndigoService extends EventDispatcher
 	{
@@ -360,17 +337,38 @@ package com.perceptiveautomation.indigo.services
         // REFRESH COMMANDS
         public function refreshDevices():void
         {
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_DEVICE));
+            if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
+            {
+                outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_DEVICE));
+            }
+            else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
+            {
+                sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
+            }
         }
 
         public function refreshActionGroups():void
         {
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_ACTION_GROUP));
+            if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
+            {
+                outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_ACTION_GROUP));
+            }
+            else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
+            {
+                sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_ACTION_GROUPS);
+            }
         }
 
         public function refreshVariables():void
         {
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_VARIABLE));
+            if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
+            {
+                outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_VARIABLE));
+            }
+            else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
+            {
+                sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_VARIABLES);
+            }
         }
 
         public function refreshTriggers():void
@@ -381,6 +379,51 @@ package com.perceptiveautomation.indigo.services
         public function refreshSchedules():void
         {
             outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_SCHEDULE));
+        }
+
+        public function removeAllActionGroups():void
+        {
+            removeAllActionGroupListeners();
+
+            this._model.actionGroupList.removeAll();
+
+            addAllActionGroupListeners();
+        }
+
+        public function removeAllDevices():void
+        {
+            removeAllDeviceListeners();
+
+            this._model.deviceList.removeAll();
+
+            addAllDeviceListeners();
+        }
+
+        public function removeAllSchedules():void
+        {
+            removeAllScheduleListeners();
+
+            this._model.scheduleList.removeAll();
+
+            addAllScheduleListeners();
+        }
+
+        public function removeAllTriggers():void
+        {
+            removeAllTriggerListeners();
+
+            this._model.triggerList.removeAll();
+
+            addAllTriggerListeners();
+        }
+
+        public function removeAllVariables():void
+        {
+            removeAllVariableListeners();
+
+            this._model.variableList.removeAll();
+
+            addAllVariableListeners();
         }
 
 
@@ -1000,7 +1043,7 @@ package com.perceptiveautomation.indigo.services
             removeAllTriggerListeners();
 
             this._model.triggerList.removeAll();
-            this._model.triggerList = IndigoObjectUtil.createDeviceList(xmlData);
+            this._model.triggerList = IndigoObjectUtil.createTriggerList(xmlData);
 
             addAllTriggerListeners();
         }
@@ -1010,7 +1053,7 @@ package com.perceptiveautomation.indigo.services
             removeAllVariableListeners();
 
             this._model.variableList.removeAll();
-            this._model.variableList = IndigoObjectUtil.createDeviceList(xmlData);
+            this._model.variableList = IndigoObjectUtil.createVariableList(xmlData);
 
             addAllVariableListeners();
         }

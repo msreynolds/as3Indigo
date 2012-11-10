@@ -9,8 +9,6 @@ package com.perceptiveautomation.indigo.device
 		public function OnOffDevice(xmlNode:Object)
 		{
 			super(xmlNode);
-			
-			//this._isOn = (xmlNode.IsOn == "true");
 		}
 		
 		[Bindable(event='isOnChanged')]

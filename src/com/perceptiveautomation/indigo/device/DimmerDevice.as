@@ -10,27 +10,29 @@ import com.perceptiveautomation.indigo.vo.*;
 		public function DimmerDevice(xmlNode:XML)
 		{
 			super(xmlNode);
-			
-			//this._brightness = xmlNode.BrightValue/10;
-				
-			if (!this._brightness)
-				this._brightness = 0;
-			
-			if (this._brightness > 100)
-				this._brightness = 100;	
 		}
-		
-		[Bindable(event='brightnessChanged')]	
+
+		[Bindable(event='brightnessChanged')]
 		public function get brightness():Number
 		{
 			return this._brightness;
 		}
-		
+
 		public function set brightness(value:Number):void
 		{
 			if (this._brightness != value)
-			{	
+			{
 				this._brightness = value;
+
+                if (!this._brightness)
+                {
+                    this._brightness = 0;
+                }
+                if (this._brightness > 100)
+                {
+                    this._brightness = 100;
+                }
+
 				this.dispatchEvent(new Event('brightnessChanged'));
 			}
 		}
