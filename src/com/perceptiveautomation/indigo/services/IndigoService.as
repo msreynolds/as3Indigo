@@ -343,7 +343,7 @@ package com.perceptiveautomation.indigo.services
             }
             else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
             {
-                sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
+                sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
             }
         }
 
@@ -355,7 +355,7 @@ package com.perceptiveautomation.indigo.services
             }
             else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
             {
-                sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_ACTION_GROUPS);
+                sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_ACTION_GROUPS);
             }
         }
 
@@ -367,7 +367,7 @@ package com.perceptiveautomation.indigo.services
             }
             else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
             {
-                sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_VARIABLES);
+                sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_VARIABLES);
             }
         }
 
@@ -895,17 +895,24 @@ package com.perceptiveautomation.indigo.services
         /***********************************************************************************/
         protected function connectUrl():void
         {
-            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_ACTION_GROUPS);
-            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
-            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_VARIABLES);
+            sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_ACTION_GROUPS);
+            sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
+            sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_VARIABLES);
             // No endpoints for these two as of yet, boo :-(
 //            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_SCHEDULES);
 //            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_TRIGGERS);
         }
 
-        protected function sendUrlRequest(url:String, resource:String):void
+        protected function sendUrlRequest(resource:String):void
         {
-            var request: URLRequest = new URLRequest(url + resource);
+
+            var fullUrl:String = _model.host;
+            if (_model.port >= 0 && _model.port != 80)
+            {
+                fullUrl += ":" + _model.port;
+            }
+
+            var request: URLRequest = new URLRequest(fullUrl + resource);
             request.method = "GET";
             request.contentType = "application/xml";
 
@@ -1002,7 +1009,7 @@ package com.perceptiveautomation.indigo.services
         {
             for each (var node:XML in resultList)
             {
-                sendUrlRequest(_model.host+":"+_model.port, node.@href);
+                sendUrlRequest(node.@href);
             }
         }
 
