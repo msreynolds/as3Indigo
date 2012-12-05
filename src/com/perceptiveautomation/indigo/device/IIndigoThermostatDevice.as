@@ -15,6 +15,10 @@ package com.perceptiveautomation.indigo.device
         function get coolPoint():Number;
         function set coolPoint(value:Number):void;
 
-        function get temperature():Number;
+        function get temperature():int;
+        function set temperature(value:int):void;
+
+        function get make():String;
+        function set make(value:String):void;
     }
 }

@@ -1,15 +1,24 @@
 package com.perceptiveautomation.indigo.device
 {
-import com.perceptiveautomation.indigo.vo.*;
-	import flash.events.Event;
+    import flash.events.Event;
 
-	public class DimmerDevice extends OnOffDevice implements IIndigoDimmerDevice
+    public class DimmerDevice extends OnOffDevice implements IIndigoDimmerDevice
 	{
 		private var _brightness:Number;
 		
 		public function DimmerDevice(xmlNode:XML)
 		{
 			super(xmlNode);
+
+            if (xmlNode.hasOwnProperty("BrightValue"))
+            {
+                brightness = xmlNode.BrightValue/10;
+            }
+
+            if (xmlNode.hasOwnProperty("brightness"))
+            {
+                brightness = xmlNode.brightness;
+            }
 		}
 
 		[Bindable(event='brightnessChanged')]
@@ -35,16 +44,6 @@ import com.perceptiveautomation.indigo.vo.*;
 
 				this.dispatchEvent(new Event('brightnessChanged'));
 			}
-		}
-		
-		public function get brightValue():Number
-		{
-			return this._brightness;	
-		}
-		
-		public function set brightValue(value:Number):void
-		{
-			brightness = value;
 		}
 		
 		override public function turnOn():void

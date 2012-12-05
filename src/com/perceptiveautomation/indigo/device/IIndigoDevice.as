@@ -7,6 +7,9 @@ package com.perceptiveautomation.indigo.device
 	{
 		function get description():String;
 		function set description(value:String):void;
+
+        function get model():String;
+        function set model(value:String):void;
 		
 		function fill(value:IIndigoDevice):void;
 	}

@@ -5,7 +5,6 @@ package com.perceptiveautomation.indigo.device
     public class ThermostatDevice extends OnOffDevice
 	{
 		private var _make:String;
-		private var _model:String;
 		private var _temperature:Number;
 		private var _heatPoint:Number;
 		private var _coolPoint:Number;
@@ -13,6 +12,38 @@ package com.perceptiveautomation.indigo.device
 		public function ThermostatDevice(xmlNode:Object)
 		{
 			super(xmlNode);
+
+            if (xmlNode.hasOwnProperty('DeviceDisplayLongState'))
+            {
+                this.temperature = xmlNode.DeviceDisplayLongState;
+            }
+
+            if (xmlNode.hasOwnProperty('displayLongState'))
+            {
+                this.temperature = xmlNode.displayLongState;
+            }
+
+            if (xmlNode.hasOwnProperty('ActiveSetpointHeat'))
+            {
+                this.heatPoint = xmlNode.ActiveSetpointHeat;
+            }
+
+            if (xmlNode.hasOwnProperty('setpointHeat'))
+            {
+                this.heatPoint = xmlNode.setpointHeat;
+            }
+
+            if (xmlNode.hasOwnProperty('ActiveSetpointCool'))
+            {
+                this.coolPoint = xmlNode.ActiveSetpointCool;
+            }
+
+            if (xmlNode.hasOwnProperty('setpointCool'))
+            {
+                this.coolPoint = xmlNode.setpointCool;
+            }
+
+            // TODO: make??
 		}
 
         [Bindable(event="makeChanged")]
@@ -26,19 +57,6 @@ package com.perceptiveautomation.indigo.device
             if (_make == value) return;
             _make = value;
             dispatchEvent(new Event("makeChanged"));
-        }
-
-        [Bindable(event="modelChanged")]
-        public function get model():String
-        {
-            return _model;
-        }
-
-        public function set model(value:String):void
-        {
-            if (_model == value) return;
-            _model = value;
-            dispatchEvent(new Event("modelChanged"));
         }
 
         [Bindable(event="temperatureChanged")]
@@ -83,13 +101,12 @@ package com.perceptiveautomation.indigo.device
         override public function fill(value:IIndigoDevice):void
 		{
 			super.fill( value );
-			if (value is ThermostatDevice)
+			if (value is IIndigoThermostatDevice)
 			{
-				this._temperature = ThermostatDevice(value).temperature;
-				this._coolPoint = ThermostatDevice(value).coolPoint;
-				this._heatPoint = ThermostatDevice(value).heatPoint;
-				this._make = ThermostatDevice(value).make;
-				this._model = ThermostatDevice(value).model;
+				this.temperature = IIndigoThermostatDevice(value).temperature;
+				this.coolPoint = IIndigoThermostatDevice(value).coolPoint;
+				this.heatPoint = IIndigoThermostatDevice(value).heatPoint;
+				this.make = IIndigoThermostatDevice(value).make;
 			}
 		}
 	}

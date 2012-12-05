@@ -20,76 +20,39 @@ package com.perceptiveautomation.indigo.device
 
         public static function createIndigoDevice(xmlData:XML):IIndigoDevice
         {
-            var newDevice:IIndigoDevice;
-
             var socketTypeCode:String = "TypeName";
             var restTypeCode:String = "type";
-            var typeCode:String = "";
 
             var socketIsOnCode:String = "IsOn";
             var restIsOnCode:String = "isOn";
-            var isOnCode:String = "";
 
-            typeCode = xmlData.hasOwnProperty(socketTypeCode) ? socketTypeCode : "";
-            if (typeCode == "")
+            var typeCode:String = xmlData.hasOwnProperty(socketTypeCode) ? socketTypeCode : restTypeCode;
+            var isOnCode:String = xmlData.hasOwnProperty(socketIsOnCode) ? socketIsOnCode : restIsOnCode;
+
+
+            if ( xmlData[typeCode].indexOf('Thermostat') > -1)
             {
-                typeCode = xmlData.hasOwnProperty(restTypeCode) ? restTypeCode : "";
+                return new ThermostatDevice(xmlData);
             }
 
-            isOnCode = xmlData.hasOwnProperty(socketIsOnCode) ? socketIsOnCode : "";
-            if (isOnCode == "")
+            else if (xmlData[typeCode].indexOf('Dimmer') > -1 || xmlData[typeCode].indexOf('LampLinc') > -1 )
             {
-                isOnCode = xmlData.hasOwnProperty(restIsOnCode) ? restIsOnCode : "";
+                return new DimmerDevice(xmlData);
             }
 
-
-            if ( xmlData[typeCode].indexOf('Thermostat') > -1 || xmlData[typeCode].indexOf('Venstar T1800') > -1 )
+            else if (xmlData[typeCode].indexOf('Motion Detector') > -1)
             {
-                newDevice = new ThermostatDevice(xmlData);
-                if (xmlData[typeCode].indexOf('Venstar') > -1)
-                {
-                    ThermostatDevice(newDevice).make = "Venstar";
-                }
-
-			    if (xmlData[typeCode].indexOf('T1800') > -1 )
-                {
-                    ThermostatDevice(newDevice).model = "T1800";
-                }
-
-                ThermostatDevice(newDevice).temperature = Number(xmlData.DeviceDisplayLongState);
-                ThermostatDevice(newDevice).heatPoint = Number(xmlData.ActiveSetpointHeat);
-                ThermostatDevice(newDevice).coolPoint = Number(xmlData.ActiveSetpointCool);
-
-                return newDevice;
+                return new MotionDetectorDevice(xmlData);
             }
 
-            else if (xmlData[typeCode].indexOf('Dimmer') > -1 || xmlData[typeCode].indexOf('LampLinc V2') > -1 )
+            else if (xmlData[typeCode].indexOf('Camera') > -1)
             {
-                newDevice = new DimmerDevice(xmlData);
-                var brightValue:Number;
-
-                if (xmlData.hasOwnProperty("BrightValue"))
-                {
-                    brightValue = xmlData.BrightValue/10;
-                }
-
-                if (xmlData.hasOwnProperty("brightness"))
-                {
-                    brightValue = xmlData.brightness;
-                }
-
-                DimmerDevice(newDevice).brightness = brightValue;
-
-                return newDevice;
+                return new CameraDevice(xmlData);
             }
 
-            else if ( isOnCode != "")
+            else if ( xmlData.hasOwnProperty(isOnCode))
             {
-                newDevice = new OnOffDevice(xmlData);
-
-                OnOffDevice(newDevice).isOn = xmlData[isOnCode].toLowerCase() == "true";
-
-                return newDevice;
+                return new OnOffDevice(xmlData);
             }
 
             else if (xmlData[typeCode].indexOf("IR-Linc Transmitter") > -1)

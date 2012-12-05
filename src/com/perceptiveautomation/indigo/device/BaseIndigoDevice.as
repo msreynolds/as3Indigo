@@ -15,6 +15,7 @@ package com.perceptiveautomation.indigo.device
         private var _id:String;
         private var _name:String;
         private var _description:String;
+        private var _model:String;
 
         public function BaseIndigoDevice(xmlNode:Object)
         {
@@ -48,6 +49,22 @@ package com.perceptiveautomation.indigo.device
             if (xmlNode.hasOwnProperty('description'))
             {
                 this._description = xmlNode.description;
+            }
+
+            // Initialize the description to an empty string if it was null in the xmlNode
+            if (!this._description)
+            {
+                this._description = "";
+            }
+
+            if (xmlNode.hasOwnProperty('TypeName'))
+            {
+                this._model = xmlNode.TypeName;
+            }
+
+            if (xmlNode.hasOwnProperty('type'))
+            {
+                this._model = xmlNode.type;
             }
         }
 
@@ -94,10 +111,24 @@ package com.perceptiveautomation.indigo.device
             }
         }
 
+        [Bindable(event="modelChanged")]
+        public function get model():String
+        {
+            return _model;
+        }
+
+        public function set model(value:String):void
+        {
+            if ( _model == value ) return;
+            _model = value;
+            dispatchEvent(new Event("modelChanged"));
+        }
+
         public function fill(value:IIndigoDevice):void
         {
             this.name = value.name;
             this.description = value.description;
+            this.model = value.model;
         }
 
     }
