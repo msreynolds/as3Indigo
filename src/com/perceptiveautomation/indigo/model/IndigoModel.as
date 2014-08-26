@@ -48,7 +48,7 @@ package com.perceptiveautomation.indigo.model
 		public var host:String = "";
 		
 		//Host port derived from the Indigo server if present or set statically here.
-		public var port:int = 1176;
+		public var port:int = 8176;
 		
 		//Host password hash derived from the Indigo server if present.
 		public var authHash:String = "";

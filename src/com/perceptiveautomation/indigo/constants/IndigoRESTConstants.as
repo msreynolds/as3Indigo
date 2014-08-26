@@ -17,6 +17,7 @@ package com.perceptiveautomation.indigo.constants
         //Indigo RESTful endpoints
         public static const INDIGO_REST_ENDPOINT_ACTION_GROUPS:String = "/actions.xml";
         public static const INDIGO_REST_ENDPOINT_DEVICES:String = "/devices.xml";
+        public static const INDIGO_REST_ENDPOINT_DEVICE:String = "/devices/";
         public static const INDIGO_REST_ENDPOINT_SCHEDULES:String = "/schedules.xml";
         public static const INDIGO_REST_ENDPOINT_TRIGGERS:String = "/triggers.xml";
         public static const INDIGO_REST_ENDPOINT_VARIABLES:String = "/variables.xml";

@@ -2,6 +2,7 @@ package com.perceptiveautomation.indigo.services
 {
     import com.perceptiveautomation.indigo.actiongroup.IIndigoActionGroup;
     import com.perceptiveautomation.indigo.constants.IndigoAPIMode;
+    import com.perceptiveautomation.indigo.constants.IndigoCommandConstants;
     import com.perceptiveautomation.indigo.constants.IndigoRestConstants;
     import com.perceptiveautomation.indigo.constants.IndigoSocketConstants;
     import com.perceptiveautomation.indigo.device.IIndigoDevice;
@@ -21,6 +22,8 @@ package com.perceptiveautomation.indigo.services
     import com.perceptiveautomation.indigo.util.IndigoSocketXMLUtil;
     import com.perceptiveautomation.indigo.variable.IIndigoVariable;
 
+    import flash.errors.IOError;
+
     import flash.events.DataEvent;
     import flash.events.Event;
     import flash.events.EventDispatcher;
@@ -30,6 +33,7 @@ package com.perceptiveautomation.indigo.services
     import flash.events.SecurityErrorEvent;
     import flash.net.URLLoader;
     import flash.net.URLRequest;
+    import flash.net.URLRequestMethod;
     import flash.net.XMLSocket;
 
     import mx.rpc.events.FaultEvent;
@@ -39,7 +43,7 @@ package com.perceptiveautomation.indigo.services
 	{
         private var _model:IndigoModel = IndigoModel.getInstance();
 
-        private var _apiMode:String = IndigoAPIMode.INDIGO_API_MODE_SOCKET;
+        private var _apiMode:String = IndigoAPIMode.INDIGO_API_MODE_RESTFUL;
         private var _indigoSocket:XMLSocket;
         private var _indigoUrlLoader:URLLoader;
 
@@ -175,15 +179,6 @@ package com.perceptiveautomation.indigo.services
 //            }
         }
 
-        protected function addTriggerListeners(trigger:IIndigoTrigger):void
-        {
-        }
-
-        protected function removeTriggerListeners(trigger:IIndigoTrigger):void
-        {
-        }
-
-
         protected function addAllVariableListeners():void
         {
             const len:int = this._model.variableList.length;
@@ -274,7 +269,7 @@ package com.perceptiveautomation.indigo.services
         }
 
 		// CONNECTION FUNCTION
-		public function connect(host:String="127.0.0.1", port:String="1176", username:String="", password:String=""):void
+		public function connect(host:String="127.0.0.1", port:String="8176", username:String="", password:String=""):void
 		{
             this._model.username = username
             this._model.password = password;
@@ -296,62 +291,55 @@ package com.perceptiveautomation.indigo.services
         // PUBLIC COMMANDS
         public function subscribeToBroadcasts():void
         {
-            sendSubscribeCommandPacket();
+            sendSubscribeCommand();
         }
 
         public function runNow(actionGroup:IIndigoActionGroup):void
         {
-            sendActionGroupCommandPacket(actionGroup.name);
+            sendActionGroupCommand(actionGroup.name);
         }
 
         public function turnOn(device:IIndigoOnOffDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoSocketConstants.INDIGO_COMMAND_DEVICE_ONOFF_TURN_ON, 100);
+            sendDeviceCommand(IndigoCommandConstants.TURN_ON_DEVICE, device.name, 'True');
         }
 
         public function turnOff(device:IIndigoOnOffDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoSocketConstants.INDIGO_COMMAND_DEVICE_ONOFF_TURN_OFF, 0);
+            sendDeviceCommand(IndigoCommandConstants.TURN_ON_DEVICE, device.name, 'False');
         }
 
         public function setBrightness(device:IIndigoDimmerDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoSocketConstants.INDIGO_COMMAND_DEVICE_DIMMER_SET_BRIGHTNESS, device.brightness);
+            sendDeviceCommand( IndigoSocketConstants.INDIGO_COMMAND_DEVICE_DIMMER_SET_BRIGHTNESS, device.name, device.brightness);
         }
 
         public function setVariableValue(variable:IIndigoVariable):void
         {
-            sendVariableCommandPacket(variable.name, variable.value.toString())
+            sendVariableCommand(variable.name, variable.value.toString())
         }
 
         public function setHeatPoint(device:IIndigoThermostatDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoSocketConstants.INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_HEAT_POINT, device.heatPoint);
+            sendDeviceCommand(IndigoSocketConstants.INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_HEAT_POINT, device.name, device.heatPoint);
         }
 
         public function setCoolPoint(device:IIndigoThermostatDevice):void
         {
-            sendDeviceCommandPacket(device.name, IndigoSocketConstants.INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_COOL_POINT, device.coolPoint);
+            sendDeviceCommand(IndigoSocketConstants.INDIGO_COMMAND_DEVICE_THERMOSTAT_SET_COOL_POINT, device.name, device.coolPoint);
         }
 
         // REFRESH COMMANDS
         public function refreshDevices():void
         {
-            if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
-            {
-                outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_DEVICE));
-            }
-            else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
-            {
-                sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
-            }
+            sendDeviceCommand(IndigoCommandConstants.READ_DEVICE_LIST);
         }
 
         public function refreshActionGroups():void
         {
             if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
             {
-                outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_ACTION_GROUP));
+                sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_ACTION_GROUP));
             }
             else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
             {
@@ -363,7 +351,7 @@ package com.perceptiveautomation.indigo.services
         {
             if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
             {
-                outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_VARIABLE));
+                sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_VARIABLE));
             }
             else if (_apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
             {
@@ -373,12 +361,12 @@ package com.perceptiveautomation.indigo.services
 
         public function refreshTriggers():void
         {
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_TRIGGER));
+            sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_TRIGGER));
         }
 
         public function refreshSchedules():void
         {
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_SCHEDULE));
+            sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_SCHEDULE));
         }
 
         public function removeAllActionGroups():void
@@ -453,7 +441,7 @@ package com.perceptiveautomation.indigo.services
 
             _indigoSocket.addEventListener(Event.CLOSE, connectClosedHandler);
             _indigoSocket.addEventListener(Event.CONNECT, connectCompleteHandler);
-            _indigoSocket.addEventListener(DataEvent.DATA, incomingPacketHandler);
+            _indigoSocket.addEventListener(DataEvent.DATA, receiveIncomingSocketPacket);
             _indigoSocket.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
             _indigoSocket.addEventListener(ProgressEvent.PROGRESS, progressHandler);
             _indigoSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
@@ -465,7 +453,7 @@ package com.perceptiveautomation.indigo.services
 
             _indigoSocket.removeEventListener(Event.CLOSE, connectClosedHandler);
             _indigoSocket.removeEventListener(Event.CONNECT, connectCompleteHandler);
-            _indigoSocket.removeEventListener(DataEvent.DATA, incomingPacketHandler);
+            _indigoSocket.removeEventListener(DataEvent.DATA, receiveIncomingSocketPacket);
             _indigoSocket.removeEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
             _indigoSocket.removeEventListener(ProgressEvent.PROGRESS, progressHandler);
             _indigoSocket.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
@@ -506,38 +494,83 @@ package com.perceptiveautomation.indigo.services
         // OUTGOING SOCKET COMMANDS/PACKETS
         /*************************************************************************/
         // SUBSCRIBE COMMAND
-        protected function sendSubscribeCommandPacket():void
+        protected function sendSubscribeCommand():void
         {
-            // Create and send a command packet to the Indigo server
-            outgoingPacketHandler(IndigoSocketXMLUtil.createSubscribeCommandPacket());
+            if (apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
+            {
+                // Create and send a command packet to the Indigo server
+                sendOutgoingSocketPacket(IndigoSocketXMLUtil.createSubscribeCommandPacket());
+            }
+            else if (apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
+            {
+
+            }
         }
 
         // ACTION GROUP COMMAND
-        protected function sendActionGroupCommandPacket(name:String):void
+        protected function sendActionGroupCommand(name:String):void
         {
-            // Create and send a command packet to the Indigo server
-            outgoingPacketHandler(IndigoSocketXMLUtil.createActionGroupCommandPacket(name));
+            if (apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
+            {
+                // Create and send a command packet to the Indigo server
+                sendOutgoingSocketPacket(IndigoSocketXMLUtil.createActionGroupCommandPacket(name));
+            }
+            else if (apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
+            {
+
+            }
         }
 
         // DEVICE COMMAND
-        protected function sendDeviceCommandPacket(name:String, command:String, value:*):void
+        protected function sendDeviceCommand(command:String, name:String='', value:*=''):void
         {
-            // Create and send a command packet to the Indigo server
-            outgoingPacketHandler(IndigoSocketXMLUtil.createDeviceCommandPacket(name, command, value));
+            if (apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
+            {
+                if (IndigoCommandConstants.READ_DEVICE_LIST)
+                {
+                    sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_DEVICE));
+                }
+                else
+                {
+                    if (command == IndigoCommandConstants.TURN_ON_DEVICE)
+                    {    command = IndigoSocketConstants.INDIGO_COMMAND_DEVICE_ONOFF_TURN_ON; }
+
+                    // Create and send a command packet to the Indigo server
+                    sendOutgoingSocketPacket(IndigoSocketXMLUtil.createDeviceCommandPacket(name, command, value));
+                }
+            }
+            else if (apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
+            {
+                if (command == IndigoCommandConstants.READ_DEVICE_LIST)
+                {
+                    sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
+                }
+                else  if (command == IndigoCommandConstants.TURN_ON_DEVICE || command == IndigoCommandConstants.TURN_OFF_DEVICE)
+                {
+                    sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICE+name, URLRequestMethod.GET, 'isOn='+value+'&_method=put');
+                }
+            }
         }
 
         // VARIABLE COMMAND
-        protected function sendVariableCommandPacket(name:String, value:String):void
+        protected function sendVariableCommand(name:String, value:String):void
         {
-            // Create and send a command packet to the Indigo server
-            outgoingPacketHandler(IndigoSocketXMLUtil.createVariableCommandPacket(name, value));
+            if (apiMode == IndigoAPIMode.INDIGO_API_MODE_SOCKET)
+            {
+                // Create and send a command packet to the Indigo server
+                sendOutgoingSocketPacket(IndigoSocketXMLUtil.createVariableCommandPacket(name, value));
+            }
+            else if (apiMode == IndigoAPIMode.INDIGO_API_MODE_RESTFUL)
+            {
+
+            }
         }
 
         // AUTHENTICATION KNOCK KNOCK COMMAND
         protected function sendAuthenticateKnock():void
         {
 	   		// Create and send an AuthenticateKnock packet
-	     	outgoingPacketHandler(IndigoSocketXMLUtil.createAuthenticateKnockPacket());
+	     	sendOutgoingSocketPacket(IndigoSocketXMLUtil.createAuthenticateKnockPacket());
 	  	}
 
         // AUTHENTICATION PASSWORD COMMAND
@@ -567,7 +600,7 @@ package com.perceptiveautomation.indigo.services
             // Create the authenticate packet type in XML format.
             const authenticatePacket:XML = IndigoSocketXMLUtil.createAuthenticatePasswordPacket(rawUser, totalHash);
 
-            outgoingPacketHandler(authenticatePacket);
+            sendOutgoingSocketPacket(authenticatePacket);
 		}
 
         /************************************************************************************/
@@ -576,17 +609,17 @@ package com.perceptiveautomation.indigo.services
         protected function requestIndigoObjectLists():void
         {
             // Request all data lists
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_ACTION_GROUP));
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_DEVICE));
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_TRIGGER));
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_SCHEDULE));
-            outgoingPacketHandler(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_VARIABLE));
+            sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_ACTION_GROUP));
+            sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_DEVICE));
+            sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_TRIGGER));
+            sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_SCHEDULE));
+            sendOutgoingSocketPacket(IndigoSocketXMLUtil.createRequestObjectListPacket(IndigoSocketConstants.INDIGO_PACKET_REQUEST_LIST_VARIABLE));
         }
 
         /************************************************************************************/
         // PACKET PUSHER (FOR OUTGOING PACKETS)
         /***********************************************************************************/
-        protected function outgoingPacketHandler(packet:XML):void
+        protected function sendOutgoingSocketPacket(packet:XML):void
         {
             // Format the packet before being sent to the server.
             var formattedPacket:String = '';
@@ -605,7 +638,7 @@ package com.perceptiveautomation.indigo.services
         /************************************************************************************/
         // INDIGO SOCKET PACKET HANDLERS (FOR RECEIVED SOCKET PACKETS)
         /***********************************************************************************/
-        protected function incomingPacketHandler(event:DataEvent):void
+        protected function receiveIncomingSocketPacket(event:DataEvent):void
         {
             // Handle the different packet types returned by the server.
 
@@ -898,12 +931,13 @@ package com.perceptiveautomation.indigo.services
             sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_ACTION_GROUPS);
             sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_DEVICES);
             sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_VARIABLES);
+
             // No endpoints for these two as of yet, boo :-(
-//            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_SCHEDULES);
-//            sendUrlRequest(_model.host+":"+_model.port, IndigoRestConstants.INDIGO_REST_ENDPOINT_TRIGGERS);
+            //sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_SCHEDULES);
+            //sendUrlRequest(IndigoRestConstants.INDIGO_REST_ENDPOINT_TRIGGERS);
         }
 
-        protected function sendUrlRequest(resource:String):void
+        protected function sendUrlRequest(resource:String, method:String=URLRequestMethod.GET,  parameters:Object = null):void
         {
 
             var fullUrl:String = _model.host;
@@ -913,11 +947,12 @@ package com.perceptiveautomation.indigo.services
             }
 
             var request: URLRequest = new URLRequest(fullUrl + resource);
-            request.method = "GET";
+            request.method = method;
             request.contentType = "application/xml";
+            request.data = parameters;
 
             _indigoUrlLoader = new URLLoader(request);
-            _indigoUrlLoader.dataFormat = "xml";
+            _indigoUrlLoader.dataFormat = "text";
             _indigoUrlLoader.load(request);
             this._model.packetStreamOutgoing += request.url + '\n';
             addRestListeners();
@@ -982,27 +1017,26 @@ package com.perceptiveautomation.indigo.services
                     addOrReplaceVariableFromXML(result);
                     return;
                 }
-//                if (result.localName() == "trigger")
-//                {
-//                    addOrReplaceTriggerFromXML(result);
-//                    return;
-//                }
+                if (result.localName() == "trigger")
+                {
+                    addOrReplaceTriggerFromXML(result);
+                    return;
+                }
 
-//                if (result.localName() == "schedule")
-//                {
-//                    addOrReplaceScheduleFromXML(result);
-//                    return;
-//                }
-
+                if (result.localName() == "schedule")
+                {
+                    addOrReplaceScheduleFromXML(result);
+                    return;
+                }
             }
 
             return;
 
         }
 
-        protected function handleRESTFault(fault:FaultEvent):void
+        protected function handleRESTFault(fault:Object):void
         {
-            trace(fault.fault);
+            trace(fault.toString());
         }
 
         protected function processRestObjectListResult(resultList:XMLList):void

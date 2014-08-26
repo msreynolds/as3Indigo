@@ -51,6 +51,16 @@ package com.perceptiveautomation.indigo.device
                 this._description = xmlNode.description;
             }
 
+            if (xmlNode.hasOwnProperty('Desc'))
+            {
+                this._description = xmlNode.Desc;
+            }
+
+            if (xmlNode.hasOwnProperty('desc'))
+            {
+                this._description = xmlNode.desc;
+            }
+
             // Initialize the description to an empty string if it was null in the xmlNode
             if (!this._description)
             {

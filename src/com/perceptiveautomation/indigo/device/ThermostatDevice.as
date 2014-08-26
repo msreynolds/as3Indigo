@@ -2,10 +2,10 @@ package com.perceptiveautomation.indigo.device
 {
     import flash.events.Event;
 
-    public class ThermostatDevice extends OnOffDevice
+    public class ThermostatDevice extends OnOffDevice implements IIndigoThermostatDevice
 	{
 		private var _make:String;
-		private var _temperature:Number;
+		private var _temperature:int;
 		private var _heatPoint:Number;
 		private var _coolPoint:Number;
 		
@@ -60,12 +60,12 @@ package com.perceptiveautomation.indigo.device
         }
 
         [Bindable(event="temperatureChanged")]
-        public function get temperature():Number
+        public function get temperature():int
         {
             return _temperature;
         }
 
-        public function set temperature(value:Number):void
+        public function set temperature(value:int):void
         {
             if (_temperature == value) return;
             _temperature = value;
